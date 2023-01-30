@@ -24,7 +24,8 @@ module.exports = {
       .setImage(
         'https://static.wixstatic.com/media/3b6a39_310aaf5e6eab4563b71463019abbff52~mv2.jpg/v1/fill/w_284,h_284,al_c,q_80,usm_0.66_1.00_0.01,enc_auto/001%20(1).jpg',
       )
-      .setThumbnail('https://i.ibb.co/gSZ0jQR/mozips-logo.png');
+      .setThumbnail('https://i.ibb.co/gSZ0jQR/mozips-logo.png')
+      .setColor('White');
     /** 버튼들 */
     const editContentButton = new ButtonBuilder({
       custom_id: 'embedBuilderEditContentButton',
