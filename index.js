@@ -2,8 +2,13 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const { Client, Collection, REST, Routes } = require('discord.js');
-const client = (module.exports = new Client({ intents: [131071] }));
-client.login(process.env.TOKEN);
+const client = (module.exports = new Client({ intents: ['Guilds', 'GuildMembers'] }));
+
+try {
+  client.login(process.env.TOKEN);
+} catch (TOKEN_INVALID) {
+  console.log('An invalid token was provided');
+}
 
 const fs = require('fs');
 
