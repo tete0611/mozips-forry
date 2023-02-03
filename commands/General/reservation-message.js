@@ -1,8 +1,21 @@
-const { SlashCommandBuilder, ChannelType, PermissionFlagsBits } = require('discord.js');
+const {
+  SlashCommandBuilder,
+  ChannelType,
+  PermissionFlagsBits,
+  EmbedBuilder,
+  ModalBuilder,
+  ActionRowBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+} = require('discord.js');
+const { formatToUtc } = require('../../common/function');
 const { parseDayToString } = require('../../common/parse');
 const schedule = require('node-schedule');
 
+let job = null;
+
 module.exports = {
+  jobList: [],
   data: new SlashCommandBuilder()
     .setName('예약메시지')
     .setDescription('예약 메시지를 등록할 수 있습니다.')
@@ -132,13 +145,16 @@ module.exports = {
             .setRequired(true)
             .addChannelTypes(ChannelType.GuildText),
         ),
+    )
+    .addSubcommand(subCommand =>
+      subCommand.setName('조회').setDescription('등록된 메시지를 조회합니다.'),
     ),
 
   /**
    *
    * @param {import("discord.js").CommandInteraction} interaction
    */
-  execute(interaction) {
+  async execute(interaction) {
     if (!interaction.isChatInputCommand()) return;
     const today = new Date();
     const { options } = interaction;
@@ -149,25 +165,41 @@ module.exports = {
     const hour = options.getInteger('시간');
     const minute = options.getInteger('분');
     const channel = options.getChannel('채널');
-    // console.log(options.data[0].options[2].value);
-    const day = options.data[0].options[2].value;
+    const day = options?.data[0]?.options[2]?.value;
     const totalDate = new Date(year, month - 1, date, hour, minute);
+    const embed = new EmbedBuilder({
+      title: message,
+    });
 
     if (options.getSubcommand() === '반복안함') {
       if (today > totalDate)
         return interaction.reply({ content: '현재보다 이후 시간을 입력해주세요.' });
-      schedule.scheduleJob(totalDate, () => channel.send({ content: message }));
+      job = schedule.scheduleJob(totalDate, () => channel.send({ embeds: [embed] }));
+      this.jobList.push({
+        type: '한번만',
+        message: message,
+        time: totalDate,
+      });
       interaction.reply({
         content: `${year}년${month}월${date}일 ${hour}:${
           minute < 10 ? '0' + minute : minute
         }에 메시지가 등록되었습니다.`,
       });
-    } else {
-      // schedule.scheduleJob(`0 ${minute} ${hour} * * ${day !== 7 ? day : '*'}`, () =>
-      //   channel.send({ content: message }),
-      // );
-      schedule.scheduleJob(`0 * * * * *`, () => channel.send({ content: message }));
-      console.log(schedule.scheduledJobs);
+    } else if (options.getSubcommand() === '반복') {
+      job = schedule.scheduleJob(`0 ${minute} ${hour} * * ${day !== 7 ? day : '*'}`, () => {
+        channel.send({ embeds: [embed] });
+        this.jobList.filter(v => v.type === '반복' || (v.type === '한번만' && v.time > new Date()));
+        console.log(this.jobList.forEach(v => console.log(v.time > new Date())));
+      });
+      /** 등록 리스트에 삽입 */
+      this.jobList.push({
+        type: '반복',
+        message: message,
+        time: `${hour.toString().padStart(2, '0')}:${minute
+          .toString()
+          .padStart(2, '0')} , ${parseDayToString(day)}`,
+      });
+      // schedule.scheduleJob(`* * * * * *`, () => channel.send({ embeds: [embed] }));
       interaction.reply({
         content: `반복 메시지가 등록되었습니다. 시간 : __**${hour
           .toString()
@@ -175,6 +207,8 @@ module.exports = {
           .toString()
           .padStart(2, '0')}**__ , 요일 : __**${parseDayToString(day)}**__`,
       });
+    } else if (options.getSubcommand() === '조회') {
+      console.log(this.jobList);
     }
   },
 };
