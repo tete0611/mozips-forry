@@ -189,7 +189,6 @@ module.exports = {
       job = schedule.scheduleJob(`0 ${minute} ${hour} * * ${day !== 7 ? day : '*'}`, () => {
         channel.send({ embeds: [embed] });
         this.jobList.filter(v => v.type === '반복' || (v.type === '한번만' && v.time > new Date()));
-        console.log(this.jobList.forEach(v => console.log(v.time > new Date())));
       });
       /** 등록 리스트에 삽입 */
       this.jobList.push({
@@ -209,6 +208,7 @@ module.exports = {
       });
     } else if (options.getSubcommand() === '조회') {
       console.log(this.jobList);
+      this.jobList.forEach(v => console.log(v.time > new Date()));
     }
   },
 };

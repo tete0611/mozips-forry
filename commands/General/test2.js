@@ -13,7 +13,6 @@ module.exports = {
     // const row2 = new ActionRowBuilder().addComponents(
     //   new ChannelSelectMenuBuilder().setCustomId('select2').setPlaceholder('Nothing selected'),
     // );
-    console.log(row);
     await interaction.reply({ content: 'Pong!', components: [row] });
   },
 };
