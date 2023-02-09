@@ -28,24 +28,31 @@ for (const file of eventFiles) {
 }
 
 client.commands = new Collection();
-
+/** 무시할 커맨드 파일 */
+const ignoreCommandFiles = [
+  'ban.js',
+  'embed-builder.js',
+  'modal.js',
+  'sentence-practice.js',
+  'test2.js',
+];
 const commands_json = [];
-
 const commandsCategoryPath = './commands';
 const commandsCategoryFiles = fs.readdirSync(commandsCategoryPath);
 
+/** 폴더 loop */
 for (const category of commandsCategoryFiles) {
   const commandsPath = `./commands/${category}`;
   const commandsFiles = fs
     .readdirSync(commandsPath)
-    .filter(file => file.endsWith('.js') || file.endsWith('.ts'));
+    .filter(file => file.endsWith('.js') && !ignoreCommandFiles.includes(file));
+  /** 파일 loop */
   for (const file of commandsFiles) {
     const command = require(`./commands/${category}/${file}`);
     client.commands.set(command.data.name, command);
     commands_json.push(command.data.toJSON());
   }
 }
-
 const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
 
 rest

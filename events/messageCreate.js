@@ -1,6 +1,5 @@
 const { ActionRowBuilder, ButtonBuilder } = require('@discordjs/builders');
 const { ButtonStyle } = require('discord.js');
-const { jobList } = require('../commands/General/reservation-message');
 
 module.exports = {
   name: 'messageCreate',
@@ -8,8 +7,6 @@ module.exports = {
   async execute(message) {
     if (message.content.includes('안녕')) {
       message.reply({ content: `**반갑습니다!**` });
-    } else if (message.content === '등록메시지체크') {
-      console.log(jobList);
     } else if (message.content === '버튼') {
       const button_1 = new ActionRowBuilder().addComponents(
         new ButtonBuilder({
