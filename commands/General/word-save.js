@@ -21,7 +21,7 @@ module.exports = {
     const message = options.getString('입력');
 
     await user.send(message);
-    await interaction.reply({ content: '**전송완료** (3초 뒤 사라짐)' });
+    await interaction.reply({ content: '**전송완료** (3초 뒤 사라짐)', ephemeral: true });
     await wait(3000);
     await interaction.deleteReply();
   },
