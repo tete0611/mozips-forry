@@ -22,7 +22,8 @@ module.exports = {
       }
     }
     // 버튼 클릭
-    else if (interaction.isButton()) console.log(interaction);
+    else if (interaction.isButton()) {
+    }
     // 예약 메시지 명령
     // else if (interaction.commandName === '예약메시지') {
     //   const today = new Date();

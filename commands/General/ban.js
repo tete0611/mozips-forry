@@ -16,7 +16,6 @@ module.exports = {
    */
   async execute(interaction) {
     if (!interaction.isChatInputCommand()) return;
-    console.log(interaction.options.data.map(v => v));
     const target = interaction.options.getUser('대상');
     const reason = interaction.options.getString('이유') ?? '-';
 
