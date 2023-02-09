@@ -3,15 +3,10 @@ const {
   ChannelType,
   PermissionFlagsBits,
   EmbedBuilder,
-  ModalBuilder,
-  ActionRowBuilder,
-  TextInputBuilder,
-  TextInputStyle,
 } = require('discord.js');
-const { formatToUtc } = require('../../common/function');
+const { convertUTC } = require('../../common/function');
 const { parseDayToString } = require('../../common/parse');
 const schedule = require('node-schedule');
-
 let job = null;
 
 module.exports = {
@@ -148,6 +143,9 @@ module.exports = {
     )
     .addSubcommand(subCommand =>
       subCommand.setName('조회').setDescription('등록된 메시지를 조회합니다.'),
+    )
+    .addSubcommand(subCommand =>
+      subCommand.setName('취소').setDescription('모든 일정을 취소합니다.'),
     ),
 
   /**
@@ -174,7 +172,7 @@ module.exports = {
     if (options.getSubcommand() === '반복안함') {
       if (today > totalDate)
         return interaction.reply({ content: '현재보다 이후 시간을 입력해주세요.' });
-      job = schedule.scheduleJob(totalDate, () => channel.send({ embeds: [embed] }));
+      job = schedule.scheduleJob(convertUTC(totalDate), () => channel.send({ embeds: [embed] }));
       this.jobList.push({
         type: '한번만',
         message: message,
@@ -186,11 +184,15 @@ module.exports = {
         }에 메시지가 등록되었습니다.`,
       });
     } else if (options.getSubcommand() === '반복') {
-      job = schedule.scheduleJob(`0 ${minute} ${hour} * * ${day !== 7 ? day : '*'}`, () => {
-        channel.send({ embeds: [embed] });
-        this.jobList.filter(v => v.type === '반복' || (v.type === '한번만' && v.time > new Date()));
-        console.log(this.jobList.forEach(v => console.log(v.time > new Date())));
-      });
+      job = schedule.scheduleJob(
+        `0 ${minute} ${convertUTC(hour)} * * ${day !== 7 ? day : '*'}`,
+        () => {
+          channel.send({ embeds: [embed] });
+          this.jobList.filter(
+            v => v.type === '반복' || (v.type === '한번만' && v.time > new Date()),
+          );
+        },
+      );
       /** 등록 리스트에 삽입 */
       this.jobList.push({
         type: '반복',
@@ -208,7 +210,10 @@ module.exports = {
           .padStart(2, '0')}**__ , 요일 : __**${parseDayToString(day)}**__`,
       });
     } else if (options.getSubcommand() === '조회') {
-      console.log(this.jobList);
+      // this.jobList.forEach(v => console.log(v.time > new Date()));
+    } else if (options.getSubcommand() === '취소') {
+      job.cancel();
+      interaction.reply({ content: '처리 되었습니다.' });
     }
   },
 };
