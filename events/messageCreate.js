@@ -1,9 +1,13 @@
 const { ActionRowBuilder, ButtonBuilder } = require('@discordjs/builders');
-const { ButtonStyle } = require('discord.js');
+const { ButtonStyle, Events, Message } = require('discord.js');
 
 module.exports = {
-  name: 'messageCreate',
+  name: Events.MessageCreate,
   once: false,
+  /**
+   *
+   * @param {import("discord.js").Message} message
+   */
   async execute(message) {
     if (message.content.includes('안녕')) {
       message.reply({ content: `**반갑습니다!**` });
@@ -36,6 +40,20 @@ module.exports = {
         content: '클릭 해주세요.',
         components: [button_1, button_2, button_3, button_4, button_5],
       });
+    } else if (message.content === '!매칭') {
+      const voiceChannel = message.member.voice.channel;
+      const members = voiceChannel.members;
+      const selectedMembers = [];
+      for (let i = 0; i < 2; i++) {
+        const randomIndex = Math.floor(Math.random() * members.array().length);
+        selectedMembers.push(members.array()[randomIndex]);
+      }
+      selectedMembers.forEach(member => {
+        member.voice.setChannel(voiceChannel);
+      });
+      message.reply(
+        `${selectedMembers[0].displayName}과 ${selectedMembers[1].displayName}이 매칭되었습니다!`,
+      );
     }
   },
 };

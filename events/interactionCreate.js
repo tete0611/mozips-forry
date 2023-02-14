@@ -1,15 +1,12 @@
-const schedule = require('node-schedule');
-const { format } = require('date-fns');
-const { EmbedBuilder } = require('@discordjs/builders');
-
 module.exports = {
   name: 'interactionCreate',
   once: false,
   /**
    *
    * @param {import("discord.js").Interaction} interaction
+   * @param {import("discord.js").Client} client
    */
-  async execute(interaction) {
+  async execute(interaction, client) {
     // 모달제출
     if (interaction.isModalSubmit()) {
       if (interaction.customId === 'myModal') {

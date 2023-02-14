@@ -1,8 +1,15 @@
 const dotenv = require('dotenv');
 dotenv.config();
 
-const { Client, Collection, REST, Routes } = require('discord.js');
-const client = (module.exports = new Client({ intents: ['Guilds', 'GuildMembers'] }));
+const { Client, Collection, REST, Routes, GatewayIntentBits } = require('discord.js');
+const client = (module.exports = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers,
+  ],
+}));
 
 try {
   client.login(process.env.TOKEN);
@@ -12,14 +19,10 @@ try {
 
 const fs = require('fs');
 
-const eventsPath = './events';
-const eventFiles = fs
-  .readdirSync(eventsPath)
-  .filter(file => file.endsWith('.js') || file.endsWith('.ts'));
+const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
 
 for (const file of eventFiles) {
-  const filePath = `./${eventsPath}/${file}`;
-  const event = require(filePath);
+  const event = require(`./events/${file}`);
   if (event.once == true) {
     client.once(event.name, (...args) => event.execute(...args));
   } else {
@@ -37,9 +40,7 @@ const ignoreCommandFiles = [
   'test2.js',
 ];
 const commands_json = [];
-const commandsCategoryPath = './commands';
-const commandsCategoryFiles = fs.readdirSync(commandsCategoryPath);
-
+const commandsCategoryFiles = fs.readdirSync('./commands');
 /** 폴더 loop */
 for (const category of commandsCategoryFiles) {
   const commandsPath = `./commands/${category}`;
