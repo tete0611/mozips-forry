@@ -1,12 +1,13 @@
+const { myMember, prevInteraction } = require('../commands/General/random-matching');
+
 module.exports = {
   name: 'interactionCreate',
   once: false,
   /**
    *
    * @param {import("discord.js").Interaction} interaction
-   * @param {import("discord.js").Client} client
    */
-  async execute(interaction, client) {
+  async execute(interaction) {
     // 모달제출
     if (interaction.isModalSubmit()) {
       if (interaction.customId === 'myModal') {
@@ -20,21 +21,19 @@ module.exports = {
     }
     // 버튼 클릭
     else if (interaction.isButton()) {
+      const { client, user, message } = interaction;
+      const guild = await client.guilds.fetch('1059355706509238294');
+      const member = await guild.members.fetch(user);
+      console.log(myMember);
+      const randomRoom = client.channels.cache.get('1059355707092242475');
+      if (interaction.customId === 'randomMatchingConfirmButton') {
+        await member.voice.setChannel(randomRoom);
+        await message.delete();
+        // prevInteraction.reply('사용자가 승락했어요.');
+      } else if (interaction.customId === 'randomMatchingRejectButton') {
+        await message.delete();
+        // prevInteraction.reply('사용자가 거절했어요.');
+      }
     }
-    // 예약 메시지 명령
-    // else if (interaction.commandName === '예약메시지') {
-    //   const today = new Date();
-    //   const message = interaction.options.getString('메시지');
-    //   const year = interaction.options.getInteger('년도');
-    //   const month = interaction.options.getInteger('월');
-    //   const date = interaction.options.getInteger('일');
-    //   const hour = interaction.options.getInteger('시간');
-    //   const minute = interaction.options.getInteger('분');
-    //   const channel = interaction.options.getChannel('채널');
-    //   const totalDate = new Date(year, month - 1, date, hour, minute);
-    //   if (today < totalDate)
-    //     await schedule.scheduleJob(totalDate, () => channel.send({ content: message }));
-    //   // console.log(format(totalDate, 'yyyy-MM-dd HH:mm'));
-    // }
   },
 };

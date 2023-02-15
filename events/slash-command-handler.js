@@ -6,7 +6,7 @@ module.exports = {
   once: false,
   /**
    *
-   * @param {import("discord.js").Interaction} interaction
+   * @param {import("discord.js").CommandInteraction} interaction
    */
   async execute(interaction) {
     if (!interaction.isChatInputCommand()) return;
