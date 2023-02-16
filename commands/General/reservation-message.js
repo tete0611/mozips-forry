@@ -210,7 +210,6 @@ module.exports = {
           .padStart(2, '0')}**__ , 요일 : __**${parseDayToString(day)}**__`,
       });
     } else if (options.getSubcommand() === '조회') {
-      // this.jobList.forEach(v => console.log(v.time > new Date()));
     } else if (options.getSubcommand() === '취소') {
       job.cancel();
       interaction.reply({ content: '처리 되었습니다.' });

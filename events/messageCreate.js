@@ -1,5 +1,5 @@
 const { ActionRowBuilder, ButtonBuilder } = require('@discordjs/builders');
-const { ButtonStyle, Events, Message } = require('discord.js');
+const { ButtonStyle, Events, MessageFlags } = require('discord.js');
 
 module.exports = {
   name: Events.MessageCreate,
@@ -40,20 +40,15 @@ module.exports = {
         content: '클릭 해주세요.',
         components: [button_1, button_2, button_3, button_4, button_5],
       });
-    } else if (message.content === '!매칭') {
-      const voiceChannel = message.member.voice.channel;
-      const members = voiceChannel.members;
-      const selectedMembers = [];
-      for (let i = 0; i < 2; i++) {
-        const randomIndex = Math.floor(Math.random() * members.array().length);
-        selectedMembers.push(members.array()[randomIndex]);
-      }
-      selectedMembers.forEach(member => {
-        member.voice.setChannel(voiceChannel);
+    } else if (message.content === '!비밀메시지') {
+      const { channel } = message;
+      channel.send({
+        content: `<@${'423114244045668393'}>비밀 메시지 전송완료`,
+        flags: MessageFlags.Ephemeral,
+        allowedMentions: {
+          users: ['423114244045668393'],
+        },
       });
-      message.reply(
-        `${selectedMembers[0].displayName}과 ${selectedMembers[1].displayName}이 매칭되었습니다!`,
-      );
     }
   },
 };

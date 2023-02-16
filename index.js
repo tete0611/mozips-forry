@@ -1,7 +1,8 @@
+const { Client, Collection, REST, Routes, GatewayIntentBits } = require('discord.js');
 const dotenv = require('dotenv');
 dotenv.config();
 
-const { Client, Collection, REST, Routes, GatewayIntentBits } = require('discord.js');
+/** 클라이언트로 부터 수신할 패킷 선언 */
 const client = (module.exports = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -9,17 +10,12 @@ const client = (module.exports = new Client({
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.DirectMessages,
+    GatewayIntentBits.GuildVoiceStates,
   ],
 }));
-
-try {
-  client.login(process.env.TOKEN);
-} catch (TOKEN_INVALID) {
-  console.log('An invalid token was provided');
-}
+/** 봇 로그인 */
 
 const fs = require('fs');
-
 const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
 
 for (const file of eventFiles) {
@@ -61,3 +57,9 @@ rest
   .put(Routes.applicationCommands(process.env.ID), { body: commands_json })
   .then(command => console.log(`${command.length}개의 커맨드를 푸쉬했습니다.`))
   .catch(console.error);
+
+try {
+  client.login(process.env.TOKEN);
+} catch (TOKEN_INVALID) {
+  console.log('An invalid token was provided');
+}
