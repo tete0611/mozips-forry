@@ -11,7 +11,12 @@ module.exports = {
   async execute(oldState, newState) {
     if (oldState.channel?.parent?.name === '랜덤채널') {
       /** 이탈한 채널의 멤버가 혼자이면 채널 삭제*/
-      if (oldState.channel.members.map(v => v).length === 1) await oldState.channel.delete();
+      if (oldState.channel?.members.map(v => v).length <= 1)
+        try {
+          await oldState.channel.delete();
+        } catch (error) {
+          console.log('throw Error : ' + error);
+        }
     }
   },
 };
