@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node .",
+    "start": "node -r dotenv/config index.js dotenv_config_path=.env.master",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon ."
+    "dev": "node -r dotenv/config index.js dotenv_config_path=.env.dev"
   },
   "keywords": [],
   "author": "",
