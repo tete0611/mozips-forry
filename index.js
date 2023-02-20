@@ -1,5 +1,5 @@
 const { Client, Collection, REST, Routes, GatewayIntentBits } = require('discord.js');
-require('dotenv').config();
+// require('dotenv').config();
 
 /** 클라이언트로 부터 수신할 패킷 선언 */
 const client = (module.exports = new Client({
@@ -12,40 +12,40 @@ const client = (module.exports = new Client({
     GatewayIntentBits.GuildVoiceStates,
   ],
 }));
-/** 봇 로그인 */
 
+/** 이벤트 파일 등록 */
 const fs = require('fs');
-const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
-
-for (const file of eventFiles) {
-  const event = require(`./events/${file}`);
-  if (event.once == true) {
-    client.once(event.name, (...args) => event.execute(...args));
-  } else {
-    client.on(event.name, (...args) => event.execute(...args));
+const eventFolders = fs.readdirSync('./events');
+/** 폴더 loop */
+for (const folder of eventFolders) {
+  const eventsPath = `./events/${folder}`;
+  const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
+  /** 파일 loop */
+  for (const file of eventFiles) {
+    const event = require(`./events/${folder}/${file}`);
+    if (event.once == true) {
+      client.once(event.name, (...args) => event.execute(...args));
+    } else {
+      client.on(event.name, (...args) => event.execute(...args));
+    }
   }
 }
 
+/** 커맨드 파일 등록 */
 client.commands = new Collection();
 /** 무시할 커맨드 파일 */
-const ignoreCommandFiles = [
-  'ban.js',
-  'embed-builder.js',
-  'modal.js',
-  'sentence-practice.js',
-  'test2.js',
-];
+const ignoreCommandFiles = ['ban.js', 'modal.js', 'sentence-practice.js', 'test2.js'];
 const commands_json = [];
-const commandsCategoryFiles = fs.readdirSync('./commands');
+const commandsFolders = fs.readdirSync('./commands');
 /** 폴더 loop */
-for (const category of commandsCategoryFiles) {
-  const commandsPath = `./commands/${category}`;
+for (const folder of commandsFolders) {
+  const commandsPath = `./commands/${folder}`;
   const commandsFiles = fs
     .readdirSync(commandsPath)
     .filter(file => file.endsWith('.js') && !ignoreCommandFiles.includes(file));
   /** 파일 loop */
   for (const file of commandsFiles) {
-    const command = require(`./commands/${category}/${file}`);
+    const command = require(`./commands/${folder}/${file}`);
     client.commands.set(command.data.name, command);
     commands_json.push(command.data.toJSON());
   }

@@ -1,5 +1,5 @@
 const { ActionRowBuilder, ButtonBuilder } = require('@discordjs/builders');
-const { ButtonStyle, Events, MessageFlags } = require('discord.js');
+const { ButtonStyle, Events } = require('discord.js');
 
 module.exports = {
   name: Events.MessageCreate,
@@ -39,15 +39,6 @@ module.exports = {
       await message.reply({
         content: '클릭 해주세요.',
         components: [button_1, button_2, button_3, button_4, button_5],
-      });
-    } else if (message.content === '!비밀메시지') {
-      const { channel } = message;
-      channel.send({
-        content: `<@${'423114244045668393'}>비밀 메시지 전송완료`,
-        flags: MessageFlags.Ephemeral,
-        allowedMentions: {
-          users: ['423114244045668393'],
-        },
       });
     }
   },

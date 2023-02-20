@@ -4,11 +4,13 @@ const {
   ActionRowBuilder,
   MessageFlags,
   ChannelType,
+  EmbedBuilder,
+  Events,
 } = require('discord.js');
 const wait = require('node:timers/promises').setTimeout;
 const { addMinutes } = require('date-fns');
 const schedule = require('node-schedule');
-require('dotenv').config();
+// require('dotenv').config();
 
 let ownerMember;
 let prevInteraction;
@@ -19,7 +21,7 @@ const shuffle = array => {
 };
 
 module.exports = {
-  name: 'interactionCreate',
+  name: Events.InteractionCreate,
   once: false,
   /**
    *
@@ -83,7 +85,7 @@ module.exports = {
             if (!prevInteraction.replied) prevInteraction.editReply('상대방이 응답하지 않았어요.');
             /** 전체매칭인 경우 */
           } else if (options.getSubcommand() === '전체') {
-            const { guild, client, options: thisOptions, channel: waitingRoom } = interaction;
+            const { guild, options: thisOptions, channel: waitingRoom } = interaction;
             const limitTime = thisOptions.getInteger('제한시간설정');
             const waitingRoomMembers = shuffle(waitingRoom.members.map(v => v));
             // const dummyNum = shuffle([...Array(11)].map((_, i) => i));
@@ -114,6 +116,7 @@ module.exports = {
                   userLimit: limitMember,
                 });
                 await totalMember.forEach(async v => await v.voice.setChannel(newChannel));
+
                 if (limitTime) {
                   const time = new Date();
                   schedule.scheduleJob(addMinutes(time, limitTime), () => {
@@ -166,6 +169,18 @@ module.exports = {
             await message.edit({ content: '거절 완료', components: [] });
             if (prevInteraction) prevInteraction.editReply('상대방이 거절했어요.');
           }
+        } else if (customId === 'embedBuilderEditContentButton') {
+          new EmbedBuilder({
+            title: 'Mozips Embed Builder222',
+            description:
+              'Use the button below to edit and then send your embed.\n\nAs you edit, you`ll see a live preview here!',
+          })
+            .setImage(
+              'https://static.wixstatic.com/media/3b6a39_310aaf5e6eab4563b71463019abbff52~mv2.jpg/v1/fill/w_284,h_284,al_c,q_80,usm_0.66_1.00_0.01,enc_auto/001%20(1).jpg',
+            )
+            .setThumbnail('https://i.ibb.co/gSZ0jQR/mozips-logo.png')
+            .setColor('White');
+          await interaction.editReply({ embeds: [] });
         }
       }
     } catch (error) {

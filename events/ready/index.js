@@ -1,4 +1,4 @@
-const { formatToUtc } = require('../common/function.js');
+const { formatToUtc } = require('../../common/function.js');
 
 module.exports = {
   name: 'ready',

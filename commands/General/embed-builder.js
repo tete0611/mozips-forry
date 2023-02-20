@@ -78,6 +78,7 @@ module.exports = {
     await interaction.reply({
       embeds: [embed],
       components: [row_1, row_2, row_3],
+      ephemeral: true,
     });
   },
 };
