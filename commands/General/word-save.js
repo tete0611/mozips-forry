@@ -1,5 +1,4 @@
 const { SlashCommandBuilder } = require('discord.js');
-const wait = require('node:timers/promises').setTimeout;
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -16,13 +15,5 @@ module.exports = {
    *
    * @param {import("discord.js").CommandInteraction} interaction
    */
-  async execute(interaction) {
-    const { options, user } = interaction;
-    const message = options.getString('입력');
-
-    await user.send(message);
-    await interaction.reply({ content: '**전송완료** (3초 뒤 사라짐)', ephemeral: true });
-    await wait(3000);
-    await interaction.deleteReply();
-  },
+  async execute(interaction) {},
 };

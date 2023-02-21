@@ -1,9 +1,0 @@
-const { formatToUtc } = require('../common/function.js');
-
-module.exports = {
-  name: 'ready',
-  once: true,
-  execute(client) {
-    console.log(`${client.user.tag} 로그인 , ${formatToUtc(new Date())}`);
-  },
-};
