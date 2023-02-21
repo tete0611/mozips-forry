@@ -111,16 +111,27 @@ module.exports = {
                 parent: process.env.RANDOM_ROOM_PARENT_ID,
                 userLimit: limitMember,
               });
-              await totalMember.forEach(async v => await v.voice.setChannel(newChannel));
-
+              await totalMember.forEach(async v => {
+                await v.voice.setChannel(newChannel);
+              });
+              await newChannel.send({
+                content: `@here\n랜덤채팅방에 초대되었습니다. 제한시간은 ${
+                  limitTime ? `__${limitTime}분__ 입니다.` : '없습니다.'
+                }\n방에 혼자 남았을 경우 방이 자동 삭제됩니다. 참고해주세요!`,
+              });
               if (limitTime) {
                 const time = new Date();
-                schedule.scheduleJob(addMinutes(time, limitTime), () => {
-                  newChannel.delete();
+                schedule.scheduleJob(addMinutes(time, limitTime - 1), async () => {
+                  await newChannel.send({ content: '1분 남았습니다. 대화를 마무리해주세요!' });
+                });
+                schedule.scheduleJob(addMinutes(time, limitTime), async () => {
+                  await newChannel.delete();
                 });
               }
             }
-            interaction.reply({ content: `__${waitingRoomMemberLength}명__이 매칭되었습니다.` });
+            interaction.reply({
+              content: `__${waitingRoomMemberLength}명__이 매칭되었습니다.`,
+            });
           } catch (err) {
             console.error('(에러발생)/랜덤매칭 전체 : ' + err);
           }
