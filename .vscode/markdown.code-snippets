@@ -2,12 +2,16 @@
   "Events snippet": {
     "prefix": ["dico-es", "discord-events-snippet"],
     "body": [
-      "const {Events} = required('discord.js');",
+      "const { Events } = require('discord.js');",
       "",
       "module.exports = {",
-      "  name: Events",
+      "  name: Events.이벤트타입",
       "  once: false,",
-      "  execute(client) {",
+      " /**",
+      "  *",
+      "  * @param {import('discord.js').이벤트타입} parameter",
+      "  */",
+      "  async execute(parameter) {",
       "  ",
       "  },",
       "};"
