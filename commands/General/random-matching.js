@@ -12,7 +12,7 @@ module.exports = {
           option
             .setName('제한시간설정')
             .setDescription('분 단위로 입력해 주세요.')
-            .setMinValue(1)
+            .setMinValue(2)
             .setMaxValue(120),
         ),
     ),

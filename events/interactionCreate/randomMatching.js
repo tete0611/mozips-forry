@@ -122,11 +122,16 @@ module.exports = {
               if (limitTime) {
                 const time = new Date();
                 schedule.scheduleJob(addMinutes(time, limitTime - 1), async () => {
-                  await newChannel.send({ content: '1분 남았습니다. 대화를 마무리해주세요!' });
+                  const room = await guild.channels.cache.get(newChannel.id);
+                  if (room)
+                    await newChannel.send({ content: '1분 남았습니다. 대화를 마무리해주세요!' });
+                  else {
+                    job_1.cancel();
+                  }
                 });
-                schedule.scheduleJob(addMinutes(time, limitTime), async () => {
-                  console.log(newChannel.deletable);
-                  if (await newChannel.deletable) await newChannel.delete();
+                const job_1 = schedule.scheduleJob(addMinutes(time, limitTime), async () => {
+                  const room = await guild.channels.cache.get(newChannel.id);
+                  if (room) await newChannel.delete();
                 });
               }
             }
@@ -137,20 +142,8 @@ module.exports = {
             console.error('(에러발생)/랜덤매칭 전체 : ' + err);
           }
         }
-      }
-      // else if (interaction.isModalSubmit()) {
-      //   /** 모달 제출일 경우 */
-      //   if (interaction.customId === 'myModal') {
-      //     const title = interaction.fields.getTextInputValue('titleId');
-      //     const content = interaction.fields.getTextInputValue('contentId');
-
-      //     interaction.reply({
-      //       content: `모달 제출 성공 (제목:${title} / 내용:${content})`,
-      //     });
-      //   }
-      // }
-      /** 랜덤매칭 버튼일 경우 */
-      else if (
+      } else if (
+        /** 랜덤매칭 버튼일 경우 */
         interaction.customId === 'randomMatchingConfirmButton' ||
         interaction.customId === 'randomMatchingRejectButton'
       ) {
