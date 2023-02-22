@@ -112,8 +112,6 @@ module.exports = {
     } else if (interaction.isModalSubmit() && interaction.customId === 'contentModal') {
       const title = interaction.fields.getTextInputValue('titleInput');
       const content = interaction.fields.getTextInputValue('contentInput');
-      console.log({ title });
-      console.log({ content });
       const embed = new EmbedBuilder({
         title: title,
         description: content,
