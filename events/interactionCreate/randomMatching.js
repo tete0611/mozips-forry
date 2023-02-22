@@ -125,7 +125,8 @@ module.exports = {
                   await newChannel.send({ content: '1분 남았습니다. 대화를 마무리해주세요!' });
                 });
                 schedule.scheduleJob(addMinutes(time, limitTime), async () => {
-                  await newChannel.delete();
+                  console.log(newChannel.deletable);
+                  if (await newChannel.deletable) await newChannel.delete();
                 });
               }
             }
