@@ -25,7 +25,7 @@ module.exports = {
     if (message.channelId === process.env.WELCOME_CHANNEL_ID)
       if (message.content.includes('안녕')) {
         message.reply({ content: `**반갑습니다!** :slight_smile:` });
-      } else if (/\bHello\b/.test(message.content) || /\bHi\b/.test(message.content)) {
+      } else if (/\b[H,h]ello\b/.test(message.content) || /\b[H,h]i\b/.test(message.content)) {
         if (!message.author.bot) message.reply({ content: `**Hello!** :slight_smile:` });
       }
     // else if (message.content === '!봇들어와') {
