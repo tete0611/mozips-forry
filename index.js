@@ -1,5 +1,4 @@
 const { Client, Collection, REST, Routes, GatewayIntentBits } = require('discord.js');
-// require('dotenv').config();
 
 /** 클라이언트로 부터 수신할 패킷 선언 */
 const client = (module.exports = new Client({
