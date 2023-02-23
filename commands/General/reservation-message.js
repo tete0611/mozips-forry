@@ -10,7 +10,6 @@ const schedule = require('node-schedule');
 let job = null;
 
 module.exports = {
-  jobList: [],
   data: new SlashCommandBuilder()
     .setName('예약메시지')
     .setDescription('예약 메시지를 등록할 수 있습니다.')
