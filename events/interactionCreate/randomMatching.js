@@ -84,7 +84,6 @@ module.exports = {
           const { guild, options: thisOptions, channel: waitingRoom } = interaction;
           const limitTime = thisOptions.getInteger('제한시간설정');
           const waitingRoomMembers = shuffle(waitingRoom.members.map(v => v));
-          // const dummyNum = shuffle([...Array(11)].map((_, i) => i));
           const waitingRoomMemberLength = waitingRoomMembers.length;
           const loop = ~~(waitingRoomMemberLength / 2);
           if (loop === 0)
@@ -92,6 +91,7 @@ module.exports = {
               content: '대기방에 충분한 사람이 없어요.',
               ephemeral: true,
             });
+          else await interaction.reply({ content: '매칭중.....' });
           try {
             for (let i = 0; i < loop; i++) {
               let limitMember = 2;
@@ -111,10 +111,10 @@ module.exports = {
                 parent: process.env.RANDOM_ROOM_PARENT_ID,
                 userLimit: limitMember,
               });
-              await totalMember.forEach(async v => {
-                await v.voice.setChannel(newChannel);
+              totalMember.forEach(v => {
+                v.voice.setChannel(newChannel);
               });
-              await newChannel.send({
+              newChannel.send({
                 content: `@here\n랜덤채팅방에 초대되었습니다. 제한시간은 ${
                   limitTime ? `__${limitTime}분__ 입니다.` : '없습니다.'
                 }\n방에 혼자 남았을 경우 방이 자동 삭제됩니다. 참고해주세요!`,
@@ -135,11 +135,12 @@ module.exports = {
                 });
               }
             }
-            interaction.reply({
+            interaction.editReply({
               content: `__${waitingRoomMemberLength}명__이 매칭되었습니다.`,
             });
           } catch (err) {
             console.error('(에러발생)/랜덤매칭 전체 : ' + err);
+            interaction.editReply({ content: `매칭에 에러가 발생했어요.`, ephemeral: true });
           }
         }
       } else if (
