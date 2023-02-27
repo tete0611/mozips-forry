@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node -r dotenv/config index.js dotenv_config_path=.env.master",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node -r dotenv/config index.js dotenv_config_path=.env.dev"
+    "dev": "nodemon -r dotenv/config index.js dotenv_config_path=.env.dev"
   },
   "keywords": [],
   "author": "",
@@ -16,7 +16,9 @@
     "date-fns": "^2.29.3",
     "discord.js": "^14.7.1",
     "dotenv": "^16.0.3",
-    "node-schedule": "^2.1.1"
+    "express": "^4.18.2",
+    "node-schedule": "^2.1.1",
+    "request": "^2.88.2"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",
