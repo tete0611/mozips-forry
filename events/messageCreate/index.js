@@ -1,4 +1,4 @@
-const { Events, ChannelType, EmbedBuilder } = require('discord.js');
+const { Events, ChannelType } = require('discord.js');
 const { joinVoiceChannel } = require('@discordjs/voice');
 
 let messageCount = 0;
