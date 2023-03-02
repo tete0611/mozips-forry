@@ -48,7 +48,11 @@ module.exports = {
       message.channelId === koreanChannelId ||
       message.channelId === koreanBeginnerChannelId
     ) {
-      if (!REG_EXP.korean.test(message.content)) {
+      const formatted = message.content
+        .replace(REG_EXP.mension, '')
+        .replace(REG_EXP.hashTag, '')
+        .replace(REG_EXP.hyperLink, '');
+      if (!REG_EXP.korean.test(formatted)) {
         message.reply({ embeds: [warningKoreanEmbed] });
       }
     }
