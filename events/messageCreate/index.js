@@ -1,5 +1,7 @@
 const { Events, ChannelType } = require('discord.js');
 const { joinVoiceChannel } = require('@discordjs/voice');
+const { REG_EXP } = require('../../common/regex');
+const { warningKoreanEmbed } = require('../../components/messageCreate');
 
 let messageCount = 0;
 
@@ -24,8 +26,9 @@ module.exports = {
    * @param {import("discord.js").Message} message
    */
   async execute(message) {
+    if (message.author.bot) return;
     if (message.channelId === process.env.WELCOME_CHANNEL_ID) {
-      if (!message.author.bot && !message.member.roles.cache.some(v => v.name === 'Manager')) {
+      if (!message.member.roles.cache.some(v => v.name === 'Manager')) {
         messageCount += 1;
         if (messageCount === 20) {
           message.channel.send({
@@ -34,9 +37,16 @@ module.exports = {
         }
         if (message.content.includes('안녕')) {
           message.reply({ content: `**반갑습니다!** :slight_smile:` });
-        } else if (/\b[H,h]ello\b/.test(message.content) || /\b[H,h]i\b/.test(message.content)) {
+        } else if (REG_EXP.hello.test(message.content) || REG_EXP.hi.test(message.content)) {
           message.reply({ content: `**Hello!** :slight_smile:` });
         }
+      }
+    } else if (
+      message.channelId === process.env.KOREAN_CHANNEL_ID ||
+      message.channelId === process.env.KOREAN_BEGINNER_CHANNEL_ID
+    ) {
+      if (!REG_EXP.korean.test(message.content)) {
+        message.reply({ embeds: [warningKoreanEmbed] });
       }
     }
     // else if (message.content === '!봇들어와') {
