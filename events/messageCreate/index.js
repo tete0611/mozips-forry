@@ -2,8 +2,11 @@ const { Events, ChannelType } = require('discord.js');
 const { joinVoiceChannel } = require('@discordjs/voice');
 const { REG_EXP } = require('../../common/regex');
 const { warningKoreanEmbed } = require('../../components/messageCreate');
-
+const { env } = process;
 let messageCount = 0;
+const welcomeChannelId = env.WELCOME_CHANNEL_ID;
+const koreanChannelId = env.KOREAN_CHANNEL_ID;
+const koreanBeginnerChannelId = env.KOREAN_BEGINNER_CHANNEL_ID;
 
 const joinVoiceChannelById = async channel => {
   if (!channel || channel.type !== ChannelType.GuildVoice)
@@ -27,7 +30,7 @@ module.exports = {
    */
   async execute(message) {
     if (message.author.bot) return;
-    if (message.channelId === process.env.WELCOME_CHANNEL_ID) {
+    if (message.channelId === welcomeChannelId) {
       if (!message.member.roles.cache.some(v => v.name === 'Manager')) {
         messageCount += 1;
         if (messageCount === 20) {
@@ -42,8 +45,8 @@ module.exports = {
         }
       }
     } else if (
-      message.channelId === process.env.KOREAN_CHANNEL_ID ||
-      message.channelId === process.env.KOREAN_BEGINNER_CHANNEL_ID
+      message.channelId === koreanChannelId ||
+      message.channelId === koreanBeginnerChannelId
     ) {
       if (!REG_EXP.korean.test(message.content)) {
         message.reply({ embeds: [warningKoreanEmbed] });
