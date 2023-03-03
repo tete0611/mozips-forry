@@ -1,23 +1,14 @@
-const {
-  ButtonBuilder,
-  ButtonStyle,
-  ActionRowBuilder,
-  MessageFlags,
-  ChannelType,
-  Events,
-} = require('discord.js');
-const wait = require('node:timers/promises').setTimeout;
+const { MessageFlags, ChannelType, Events, EmbedBuilder, Colors } = require('discord.js');
 const { addMinutes } = require('date-fns');
 const schedule = require('node-schedule');
 const { row_1 } = require('../../components/randomMatching');
-
-let ownerMember;
-let prevInteraction;
 
 const shuffle = array => {
   array.sort(() => Math.random() - 0.5);
   return array;
 };
+
+let isEnd = true;
 
 module.exports = {
   name: Events.InteractionCreate,
@@ -27,13 +18,24 @@ module.exports = {
    * @param {import("discord.js").Interaction} interaction
    */
   async execute(interaction) {
+    const greeting = new EmbedBuilder({
+      title: ':wave: 랜덤방에 초대되었습니다! :wave:',
+      description:
+        '자유롭게 채팅&대화를 나누세요!\n방에 혼자 남았을 경우 방이 자동삭제 됩니다.\n\n :wave: **Welcome to Random Room!** :wave:\nFeel free to talk and chat.\nIf you are left alone, the room will be automatically deleted.',
+      color: Colors.Yellow,
+    });
+
     try {
       const { commandName, options } = interaction;
       if (commandName === '랜덤매칭') {
         if (options.getSubcommand() === '개인') {
-          const { client, user: myUser, member, channel: waitingRoom } = interaction;
-          prevInteraction = interaction;
-          ownerMember = member;
+          const {
+            client,
+            user: myUser,
+            member: ownerMember,
+            channel: waitingRoom,
+            guild,
+          } = interaction;
           const myTag = myUser.tag;
           const waitingRoomMembers = waitingRoom.members.map(v => v);
           /** 대기방에 내가 있는지 판별 */
@@ -57,30 +59,50 @@ module.exports = {
           const filter = i =>
             (i.customId === 'randomMatchingConfirmButton' ||
               i.customId === 'randomMatchingRejectButton') &&
-            i.user.id === interaction.user.id;
-
+            i.user.id === selectedUser.id;
           const collector = DM_Channel.createMessageComponentCollector({
             filter: filter,
             time: 30000,
           });
           collector.on('collect', async buttonInteraction => {
+            const { message } = buttonInteraction;
             if (buttonInteraction.customId === 'randomMatchingConfirmButton') {
-              console.log('승락클릭');
+              interaction.editReply('상대방이 승락했어요! :wave:');
+              const newChannel = await guild.channels.create({
+                name: `랜덤방`,
+                type: ChannelType.GuildVoice,
+                parent: process.env.RANDOM_ROOM_PARENT_ID,
+                userLimit: 2,
+              });
+              const newDescription =
+                greeting.data.description + `\n<@${myUser.id}> <@${selectedUser.id}>`;
+              greeting.setDescription(newDescription);
+              newChannel.send({
+                embeds: [greeting],
+              });
+              await ownerMember.voice.setChannel(newChannel);
+              await selectedMember.voice.setChannel(newChannel);
+              message.edit({
+                content: `참가 완료 <#${newChannel.id}>`,
+                components: [],
+              });
             } else if (buttonInteraction.customId === 'randomMatchingRejectButton') {
-              console.log('거절클릭');
+              interaction.editReply('상대방이 거절했어요 :pensive:');
+              message.edit({ content: '거절 완료', components: [] });
             }
           });
-
-          selectedUser.send({
+          DM_Channel.send({
             content: `랜덤매칭에 상대로 선택되었습니다. 참가 하시겠어요?`,
             components: [row_1],
             flags: MessageFlags.Ephemeral,
           });
-          prevInteraction.deferReply({
+          isEnd = false;
+          interaction.deferReply({
             ephemeral: true,
           });
           collector.on('end', () => {
-            if (!prevInteraction.replied) prevInteraction.editReply('상대방이 응답하지 않았어요.');
+            isEnd = true;
+            if (!interaction.replied) interaction.editReply('상대방이 응답하지 않았어요.');
           });
           /** 전체매칭인 경우 */
         } else if (options.getSubcommand() === '전체') {
@@ -95,18 +117,23 @@ module.exports = {
               ephemeral: true,
             });
           else await interaction.reply({ content: '매칭중.....' });
+          /** 방 생성 시작 */
           try {
             for (let i = 0; i < loop; i++) {
               let limitMember = 2;
+              let newDescription;
               const totalMember = [];
               const member_1 = waitingRoomMembers.pop(0);
               const member_2 = waitingRoomMembers.pop(0);
+              newDescription =
+                greeting.data.description + `\n<@${member_1.user.id}> <@${member_2.user.id}>`;
               totalMember.push(member_1);
               totalMember.push(member_2);
               if (waitingRoomMembers.length === 1) {
                 limitMember = 3;
                 const member_3 = waitingRoomMembers.pop(0);
                 totalMember.push(member_3);
+                newDescription += ` <@${member_3.user.id}>`;
               }
               const newChannel = await guild.channels.create({
                 name: `랜덤방`,
@@ -114,13 +141,18 @@ module.exports = {
                 parent: process.env.RANDOM_ROOM_PARENT_ID,
                 userLimit: limitMember,
               });
+              greeting.setDescription(newDescription).setFields(
+                { name: '\u200B', value: '\u200B' },
+                {
+                  name: '제한시간 (Time Limit)',
+                  value: limitTime ? `__${limitTime} min__` : '__없음__',
+                },
+              );
+              newChannel.send({
+                embeds: [greeting],
+              });
               totalMember.forEach(v => {
                 v.voice.setChannel(newChannel);
-              });
-              newChannel.send({
-                content: `@here\n랜덤채팅방에 초대되었습니다. 제한시간은 ${
-                  limitTime ? `__${limitTime}분__ 입니다.` : '없습니다.'
-                }\n방에 혼자 남았을 경우 방이 자동 삭제됩니다. 참고해주세요!`,
               });
               if (limitTime) {
                 const time = new Date();
@@ -151,29 +183,7 @@ module.exports = {
         interaction.customId === 'randomMatchingConfirmButton' ||
         interaction.customId === 'randomMatchingRejectButton'
       ) {
-        const { client, user, message } = interaction;
-
-        const guild = await client.guilds.fetch(process.env.GUILD_ID);
-        const seledtedmember = await guild.members.fetch(user);
-        // const resultMember = [ownerMember, seledtedmember];
-        if (!prevInteraction || prevInteraction.replied)
-          return message.edit({ content: '만료 되었습니다.', components: [] });
-
-        if (interaction.customId === 'randomMatchingConfirmButton') {
-          const newChannel = await guild.channels.create({
-            name: `랜덤방`,
-            type: ChannelType.GuildVoice,
-            parent: process.env.RANDOM_ROOM_PARENT_ID,
-            userLimit: 2,
-          });
-          if (prevInteraction) prevInteraction.editReply('상대방이 승락했어요.');
-          await ownerMember.voice.setChannel(newChannel);
-          await seledtedmember.voice.setChannel(newChannel);
-          await message.edit({ content: '참가 완료', components: [] });
-        } else if (interaction.customId === 'randomMatchingRejectButton') {
-          await message.edit({ content: '거절 완료', components: [] });
-          if (prevInteraction) prevInteraction.editReply('상대방이 거절했어요.');
-        }
+        if (isEnd) interaction.update({ content: '만료된 요청입니다.', components: [] });
       }
     } catch (error) {
       console.error(error);

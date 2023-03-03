@@ -1,5 +1,6 @@
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
 
+/** 랜덤매칭 참/불참 컴포넌트 */
 const sendButton = new ButtonBuilder({
   custom_id: 'randomMatchingConfirmButton',
   label: '참가',
@@ -11,8 +12,9 @@ const cancelButton = new ButtonBuilder({
   label: '거절',
   style: ButtonStyle.Danger,
 });
-
 const row1 = new ActionRowBuilder({ components: [sendButton, cancelButton] });
+
+/** 랜덤매칭 인사말 임베드 */
 
 module.exports = {
   row_1: row1,
