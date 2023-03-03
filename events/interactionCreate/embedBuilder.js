@@ -4,7 +4,6 @@ const {
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
-  EmbedBuilder,
   ComponentType,
 } = require('discord.js');
 const { embed, components } = require('../../components/embedBuilder');
