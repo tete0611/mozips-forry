@@ -51,9 +51,15 @@ module.exports = {
       const formatted = message.content
         .replace(REG_EXP.mension, '')
         .replace(REG_EXP.hashTag, '')
-        .replace(REG_EXP.hyperLink, '');
-      if (!REG_EXP.korean.test(formatted)) {
-        message.reply({ embeds: [warningKoreanEmbed] });
+        .replace(REG_EXP.hyperLink, '')
+        .replace(/\d/g, '')
+        // eslint-disable-next-line no-useless-escape
+        .replace(/[\{\}\[\]\/?.,;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]/g, '')
+        .replace(/<:[a-zA-Z0-9_]+:[0-9]+>/g, '');
+      console.log(formatted.codePointAt());
+      if (!REG_EXP.korean.test(formatted) && formatted.trim() !== '' && /[a-z]/g.test(formatted)) {
+        // message.reply({ embeds: [warningKoreanEmbed] });
+        message.reply({ content: message.content });
       }
     }
     // else if (message.content === '!봇들어와') {

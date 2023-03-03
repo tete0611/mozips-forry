@@ -9,6 +9,7 @@ const {
 const wait = require('node:timers/promises').setTimeout;
 const { addMinutes } = require('date-fns');
 const schedule = require('node-schedule');
+const { row_1 } = require('../../components/randomMatching');
 
 let ownerMember;
 let prevInteraction;
@@ -52,33 +53,35 @@ module.exports = {
           const selectedMember = filterMembers[randomNumber];
           /** 선정된 사용자의 User객체 */
           const selectedUser = await client.users.fetch(selectedMember.user.id);
-          const sendButton = new ButtonBuilder({
-            custom_id: 'randomMatchingConfirmButton',
-            label: '참가',
-            style: ButtonStyle.Success,
-          });
+          const DM_Channel = await selectedUser.createDM();
+          const filter = i =>
+            (i.customId === 'randomMatchingConfirmButton' ||
+              i.customId === 'randomMatchingRejectButton') &&
+            i.user.id === interaction.user.id;
 
-          const cancelButton = new ButtonBuilder({
-            custom_id: 'randomMatchingRejectButton',
-            label: '거절',
-            style: ButtonStyle.Danger,
+          const collector = DM_Channel.createMessageComponentCollector({
+            filter: filter,
+            time: 30000,
           });
-
-          const row1 = new ActionRowBuilder({ components: [sendButton, cancelButton] });
+          collector.on('collect', async buttonInteraction => {
+            if (buttonInteraction.customId === 'randomMatchingConfirmButton') {
+              console.log('승락클릭');
+            } else if (buttonInteraction.customId === 'randomMatchingRejectButton') {
+              console.log('거절클릭');
+            }
+          });
 
           selectedUser.send({
             content: `랜덤매칭에 상대로 선택되었습니다. 참가 하시겠어요?`,
-            components: [row1],
+            components: [row_1],
             flags: MessageFlags.Ephemeral,
-            // allowedMentions: {
-            //   users: [selectedUser.id],
-            // },
           });
           prevInteraction.deferReply({
             ephemeral: true,
           });
-          await wait(30000);
-          if (!prevInteraction.replied) prevInteraction.editReply('상대방이 응답하지 않았어요.');
+          collector.on('end', () => {
+            if (!prevInteraction.replied) prevInteraction.editReply('상대방이 응답하지 않았어요.');
+          });
           /** 전체매칭인 경우 */
         } else if (options.getSubcommand() === '전체') {
           const { guild, options: thisOptions, channel: waitingRoom } = interaction;
