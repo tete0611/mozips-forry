@@ -56,10 +56,8 @@ module.exports = {
         // eslint-disable-next-line no-useless-escape
         .replace(/[\{\}\[\]\/?.,;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]/g, '')
         .replace(/<:[a-zA-Z0-9_]+:[0-9]+>/g, '');
-      console.log(formatted.codePointAt());
       if (!REG_EXP.korean.test(formatted) && formatted.trim() !== '' && /[a-z]/g.test(formatted)) {
-        // message.reply({ embeds: [warningKoreanEmbed] });
-        message.reply({ content: message.content });
+        message.reply({ embeds: [warningKoreanEmbed] });
       }
     }
     // else if (message.content === '!봇들어와') {
