@@ -31,18 +31,17 @@ module.exports = {
         if (options.getSubcommand() === '개인') {
           const {
             client,
-            user: myUser,
+            user: ownerUser,
             member: ownerMember,
             channel: waitingRoom,
             guild,
           } = interaction;
-          const myTag = myUser.tag;
           const waitingRoomMembers = waitingRoom.members.map(v => v);
           /** 대기방에 내가 있는지 판별 */
-          if (!waitingRoomMembers.some(v => v.user.tag === myTag))
+          if (!waitingRoomMembers.some(v => v.user.tag === ownerUser.tag))
             return interaction.reply({ content: '대기방에 먼저 입장해주세요.', ephemeral: true });
           /** 대기방에서 자기자신 제거 */
-          const filterMembers = waitingRoomMembers.filter(v => v.user.tag !== myTag);
+          const filterMembers = waitingRoomMembers.filter(v => v.user.tag !== ownerUser.tag);
           /** 랜덤 대화상대가 있는지 판별 */
           if (filterMembers.length < 1)
             return interaction.reply({
@@ -64,9 +63,28 @@ module.exports = {
             filter: filter,
             time: 30000,
           });
+          await interaction.deferReply({
+            ephemeral: true,
+          });
           collector.on('collect', async buttonInteraction => {
             const { message } = buttonInteraction;
             if (buttonInteraction.customId === 'randomMatchingConfirmButton') {
+              /** 송신자가 대기방에 있는지 판별 */
+              if (!ownerMember.voice.channel) {
+                await buttonInteraction.update({
+                  content: '상대방이 대기방에 존재하지 않습니다',
+                  components: [],
+                });
+                interaction.editReply('대기방에 참가해있지 않은거 같아요');
+                return;
+              }
+              /** 수신자가 대기방에 있는지 판별 */
+              if (!selectedMember.voice.channel) {
+                await buttonInteraction.update({
+                  content: '대기방에 참가해서 클릭해주세요',
+                });
+                return;
+              }
               interaction.editReply('상대방이 승락했어요! :wave:');
               const newChannel = await guild.channels.create({
                 name: `랜덤방`,
@@ -75,7 +93,7 @@ module.exports = {
                 userLimit: 2,
               });
               const newDescription =
-                greeting.data.description + `\n<@${myUser.id}> <@${selectedUser.id}>`;
+                greeting.data.description + `\n<@${ownerUser.id}> <@${selectedUser.id}>`;
               greeting.setDescription(newDescription);
               newChannel.send({
                 embeds: [greeting],
@@ -97,9 +115,6 @@ module.exports = {
             flags: MessageFlags.Ephemeral,
           });
           isEnd = false;
-          interaction.deferReply({
-            ephemeral: true,
-          });
           collector.on('end', () => {
             isEnd = true;
             if (!interaction.replied) interaction.editReply('상대방이 응답하지 않았어요.');
