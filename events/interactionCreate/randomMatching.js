@@ -29,6 +29,9 @@ module.exports = {
       const { commandName, options } = interaction;
       if (commandName === '랜덤매칭') {
         if (options.getSubcommand() === '개인') {
+          await interaction.deferReply({
+            ephemeral: true,
+          });
           const {
             client,
             user: ownerUser,
@@ -62,9 +65,6 @@ module.exports = {
           const collector = DM_Channel.createMessageComponentCollector({
             filter: filter,
             time: 30000,
-          });
-          await interaction.deferReply({
-            ephemeral: true,
           });
           collector.on('collect', async buttonInteraction => {
             const { message } = buttonInteraction;

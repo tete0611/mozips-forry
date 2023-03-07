@@ -1,4 +1,11 @@
 const { Client, Collection, REST, Routes, GatewayIntentBits } = require('discord.js');
+const mongoose = require('mongoose');
+
+/** 서버연결 */
+mongoose
+  .connect(process.env.END_POINT, {})
+  .then(console.log('데이터베이스 연결완료'))
+  .catch(console.error);
 
 /** 클라이언트로 부터 수신할 패킷 선언 */
 const client = (module.exports = new Client({
