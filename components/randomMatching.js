@@ -14,8 +14,6 @@ const cancelButton = new ButtonBuilder({
 });
 const row1 = new ActionRowBuilder({ components: [sendButton, cancelButton] });
 
-/** 랜덤매칭 인사말 임베드 */
-
 module.exports = {
   row_1: row1,
 };
