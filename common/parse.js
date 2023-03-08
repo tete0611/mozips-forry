@@ -1,4 +1,5 @@
 module.exports = {
+  /** @param {number} num  */
   parseDayToString: num => {
     switch (num) {
       case 0:

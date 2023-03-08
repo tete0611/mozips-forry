@@ -2,6 +2,7 @@ const { MessageFlags, ChannelType, Events, EmbedBuilder, Colors } = require('dis
 const { addMinutes } = require('date-fns');
 const schedule = require('node-schedule');
 const { row_1 } = require('../../components/randomMatching');
+const { onRandomMatching, onTwoDimensions } = require('../../common/function');
 
 const shuffle = array => {
   array.sort(() => Math.random() - 0.5);
@@ -18,12 +19,12 @@ module.exports = {
    * @param {import("discord.js").Interaction} interaction
    */
   async execute(interaction) {
-    const greeting = new EmbedBuilder({
-      title: ':wave: 랜덤방에 초대되었습니다! :wave:',
-      description:
-        '자유롭게 채팅&대화를 나누세요!\n방에 혼자 남았을 경우 방이 자동삭제 됩니다.\n\n :wave: **Welcome to Random Room!** :wave:\nFeel free to talk and chat.\nIf you are left alone, the room will be automatically deleted.',
-      color: Colors.Yellow,
-    });
+    // const greeting = new EmbedBuilder({
+    //   title: ':wave: 랜덤방에 초대되었습니다! :wave:',
+    //   description:
+    //     '자유롭게 채팅&대화를 나누세요!\n방에 혼자 남았을 경우 방이 자동삭제 됩니다.\n\n :wave: **Welcome to Random Room!** :wave:\nFeel free to talk and chat.\nIf you are left alone, the room will be automatically deleted.',
+    //   color: Colors.Yellow,
+    // });
 
     try {
       const { commandName, options } = interaction;
@@ -92,9 +93,11 @@ module.exports = {
                 parent: process.env.RANDOM_ROOM_PARENT_ID,
                 userLimit: 2,
               });
-              const newDescription =
-                greeting.data.description + `\n<@${ownerUser.id}> <@${selectedUser.id}>`;
-              greeting.setDescription(newDescription);
+              const greeting = new EmbedBuilder({
+                title: ':wave: 랜덤방에 초대되었습니다! :wave:',
+                description: `자유롭게 채팅&대화를 나누세요!\n방에 혼자 남았을 경우 방이 자동삭제 됩니다.\n\n :wave: **Welcome to Random Room!** :wave:\nFeel free to talk and chat.\nIf you are left alone, the room will be automatically deleted.\n<@${ownerUser.id}> <@${selectedUser.id}>`,
+                color: Colors.Yellow,
+              });
               newChannel.send({
                 embeds: [greeting],
               });
@@ -123,55 +126,52 @@ module.exports = {
         } else if (options.getSubcommand() === '전체') {
           const { guild, options: thisOptions, channel: waitingRoom } = interaction;
           const limitTime = thisOptions.getInteger('제한시간설정');
+          const today = new Date();
+          /** 대기방 멤버 */
           const waitingRoomMembers = shuffle(waitingRoom.members.map(v => v));
           const waitingRoomMemberLength = waitingRoomMembers.length;
-          const loop = ~~(waitingRoomMemberLength / 2);
-          if (loop === 0)
+          /** 선생님들 */
+          const teacherMembers = waitingRoomMembers.filter(member =>
+            member.roles.cache.some(v => v.name === '선생님'),
+          );
+          if (waitingRoomMemberLength < 2)
             return interaction.reply({
               content: '대기방에 충분한 사람이 없어요.',
               ephemeral: true,
             });
           else await interaction.reply({ content: '매칭중.....' });
-          /** 방 생성 시작 */
-          try {
-            for (let i = 0; i < loop; i++) {
-              let limitMember = 2;
-              let newDescription;
-              const totalMember = [];
-              const member_1 = waitingRoomMembers.pop(0);
-              const member_2 = waitingRoomMembers.pop(0);
-              newDescription =
-                greeting.data.description + `\n<@${member_1.user.id}> <@${member_2.user.id}>`;
-              totalMember.push(member_1);
-              totalMember.push(member_2);
-              if (waitingRoomMembers.length === 1) {
-                limitMember = 3;
-                const member_3 = waitingRoomMembers.pop(0);
-                totalMember.push(member_3);
-                newDescription += ` <@${member_3.user.id}>`;
-              }
+          const resultMembers = onTwoDimensions(waitingRoomMembers);
+          /** 비동기 방 생성 */
+          Promise.allSettled(
+            resultMembers.map(async v => {
+              /** 전송할 임베드 */
+              const greeting = new EmbedBuilder({
+                title: ':wave: 랜덤방에 초대되었습니다! :wave:',
+                description: `자유롭게 채팅&대화를 나누세요!\n방에 혼자 남았을 경우 방이 자동삭제 됩니다.\n\n :wave: **Welcome to Random Room!** :wave:\nFeel free to talk and chat.\nIf you are left alone, the room will be automatically deleted.\n${v
+                  .map(member => `<@${member.user.id}>`)
+                  .join(' ')}`,
+                color: Colors.Yellow,
+                fields: [
+                  { name: '\u200B', value: '\u200B' },
+                  {
+                    name: '제한시간 (Time Limit)',
+                    value: limitTime ? `__${limitTime} min__` : '__없음__',
+                  },
+                ],
+              });
               const newChannel = await guild.channels.create({
                 name: `랜덤방`,
                 type: ChannelType.GuildVoice,
                 parent: process.env.RANDOM_ROOM_PARENT_ID,
-                userLimit: limitMember,
+                userLimit: v.length,
               });
-              greeting.setDescription(newDescription).setFields(
-                { name: '\u200B', value: '\u200B' },
-                {
-                  name: '제한시간 (Time Limit)',
-                  value: limitTime ? `__${limitTime} min__` : '__없음__',
-                },
-              );
               newChannel.send({
                 embeds: [greeting],
               });
-              totalMember.forEach(v => {
-                v.voice.setChannel(newChannel);
-              });
+              v.forEach(member => member.voice.setChannel(newChannel));
+
               if (limitTime) {
-                const time = new Date();
-                schedule.scheduleJob(addMinutes(time, limitTime - 1), async () => {
+                schedule.scheduleJob(addMinutes(today, limitTime - 1), async () => {
                   const room = await guild.channels.cache.get(newChannel.id);
                   if (room)
                     await newChannel.send({ content: '1분 남았습니다. 대화를 마무리해주세요!' });
@@ -179,19 +179,19 @@ module.exports = {
                     job_1.cancel();
                   }
                 });
-                const job_1 = schedule.scheduleJob(addMinutes(time, limitTime), async () => {
+                const job_1 = schedule.scheduleJob(addMinutes(today, limitTime), async () => {
                   const room = await guild.channels.cache.get(newChannel.id);
                   if (room) await newChannel.delete();
                 });
               }
-            }
-            interaction.editReply({
-              content: `__${waitingRoomMemberLength}명__이 매칭되었습니다.`,
+            }),
+          )
+            .catch(err => console.log('랜덤매칭 에러발생 : ' + err))
+            .finally(() => {
+              interaction.editReply({
+                content: `__${waitingRoomMemberLength}명__이 매칭되었습니다.`,
+              });
             });
-          } catch (err) {
-            console.error('(에러발생)/랜덤매칭 전체 : ' + err);
-            interaction.editReply({ content: `매칭에 에러가 발생했어요.`, ephemeral: true });
-          }
         }
       } else if (
         /** 랜덤매칭 버튼일 경우 */
