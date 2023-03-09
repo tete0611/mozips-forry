@@ -58,7 +58,7 @@ module.exports = {
       const jobEmbeds = jobs.map(v => {
         return new EmbedBuilder({
           title: v.message,
-          description: `시간 : **${formatToUtc(v.reservedAt)}** / 작성자 : **${v.userNickname}**`,
+          description: `시간 : **${formatToUtc(v.reservedAt)}** / 주인 : **${v.userNickname}**`,
           color: Colors.Yellow,
           footer: { text: `ID : ${v._id.toString()}` },
         });
