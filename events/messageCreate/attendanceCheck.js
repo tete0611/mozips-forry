@@ -32,20 +32,17 @@ module.exports = {
     } else if (user.date === date) {
       message.reply({ content: '이미 오늘 출석체크를 했어요!', options: { ephemeral: true } });
     } else {
-      await Schema.findOneAndRemove({
-        userId: author.id,
-      });
-      newData = new Schema({
-        count: String(parseInt(user.count) + 1),
-        userid: author.id,
-        date: date,
-      });
+      await Schema.findOneAndUpdate(
+        {
+          userId: author.id,
+        },
+        { $set: { count: String(parseInt(user.count) + 1), date: date } },
+      );
       message.reply(
         `**출석체크를 완료했어요** :happy:\n누적 출석체크 횟수 : __${String(
           parseInt(user.count) + 1,
         )}__`,
       );
-      newData.save();
     }
   },
 };
