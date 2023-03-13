@@ -38,6 +38,7 @@ module.exports = {
         reservedAt: totalDate.toISOString(),
         userId: user.id,
         userNickname: member.nickname,
+        channelId: channel.id,
       });
       newJob.save();
       interaction.reply({
@@ -52,6 +53,7 @@ module.exports = {
         repeatAt: { minute: minute, hour: hour, day: day },
         userId: user.id,
         userNickname: member.nickname,
+        channelId: channel.id,
       });
       newJob.save().then(() =>
         interaction.reply({
