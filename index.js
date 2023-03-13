@@ -40,7 +40,7 @@ for (const folder of eventFolders) {
 /** 커맨드 파일 등록 */
 client.commands = new Collection();
 /** 무시할 커맨드 파일 */
-const ignoreCommandFiles = ['ban.js', 'modal.js', 'sentence-practice.js'];
+const ignoreCommandFiles = ['ban.js', 'modal.js'];
 const commands_json = [];
 const commandsFolders = fs.readdirSync('./commands');
 /** 폴더 loop */
