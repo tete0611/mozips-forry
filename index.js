@@ -1,9 +1,10 @@
 const { Client, Collection, REST, Routes, GatewayIntentBits } = require('discord.js');
 const mongoose = require('mongoose');
+const { env } = process;
 
 /** 서버연결 */
 mongoose
-  .connect(process.env.END_POINT, {})
+  .connect(env.END_POINT, { dbName: env.DB_NAME })
   .then(console.log('데이터베이스 연결완료'))
   .catch(console.error);
 
@@ -56,15 +57,15 @@ for (const folder of commandsFolders) {
     commands_json.push(command.data.toJSON());
   }
 }
-const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
+const rest = new REST({ version: '10' }).setToken(env.TOKEN);
 
 rest
-  .put(Routes.applicationCommands(process.env.ID), { body: commands_json })
+  .put(Routes.applicationCommands(env.ID), { body: commands_json })
   .then(command => console.log(`${command.length}개의 커맨드를 푸쉬했습니다.`))
   .catch(console.error);
 
 try {
-  client.login(process.env.TOKEN);
+  client.login(env.TOKEN);
 } catch (TOKEN_INVALID) {
   console.log('An invalid token was provided');
 }
