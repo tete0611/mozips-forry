@@ -1,19 +1,10 @@
-const {
-  SlashCommandBuilder,
-  ChannelType,
-  PermissionFlagsBits,
-  EmbedBuilder,
-} = require('discord.js');
-const { convertUTC } = require('../../common/function');
-const { parseDayToString } = require('../../common/parse');
-const schedule = require('node-schedule');
-let job = null;
+const { SlashCommandBuilder, ChannelType, PermissionFlagsBits } = require('discord.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('예약메시지')
     .setDescription('예약 메시지를 등록할 수 있습니다.')
-    .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers)
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     /** 반복안함 */
     .addSubcommand(subCommand =>
       subCommand
@@ -144,7 +135,15 @@ module.exports = {
       subCommand.setName('조회').setDescription('등록된 메시지를 조회합니다.'),
     )
     .addSubcommand(subCommand =>
-      subCommand.setName('취소').setDescription('모든 일정을 취소합니다.'),
+      subCommand
+        .setName('삭제')
+        .setDescription('등록된 일정을 삭제합니다.')
+        .addStringOption(option =>
+          option
+            .setName('아이디')
+            .setDescription('삭제할 일정의 ID를 넣어주세요')
+            .setRequired(true),
+        ),
     ),
 
   /**
@@ -152,66 +151,65 @@ module.exports = {
    * @param {import("discord.js").CommandInteraction} interaction
    */
   async execute(interaction) {
-    if (!interaction.isChatInputCommand()) return;
-    const today = new Date();
-    const { options } = interaction;
-    const message = options.getString('메시지');
-    const year = options.getInteger('년도');
-    const month = options.getInteger('월');
-    const date = options.getInteger('일');
-    const hour = options.getInteger('시간');
-    const minute = options.getInteger('분');
-    const channel = options.getChannel('채널');
-    const day = options?.data[0]?.options[2]?.value;
-    const totalDate = new Date(year, month - 1, date, hour, minute);
-    const embed = new EmbedBuilder({
-      title: message,
-    });
-
-    if (options.getSubcommand() === '반복안함') {
-      if (today > totalDate)
-        return interaction.reply({ content: '현재보다 이후 시간을 입력해주세요.' });
-      job = schedule.scheduleJob(convertUTC(totalDate), () => channel.send({ embeds: [embed] }));
-      this.jobList.push({
-        type: '한번만',
-        message: message,
-        time: totalDate,
-      });
-      interaction.reply({
-        content: `${year}년${month}월${date}일 ${hour}:${
-          minute < 10 ? '0' + minute : minute
-        }에 메시지가 등록되었습니다.`,
-      });
-    } else if (options.getSubcommand() === '반복') {
-      job = schedule.scheduleJob(
-        `0 ${minute} ${convertUTC(hour)} * * ${day !== 7 ? day : '*'}`,
-        () => {
-          channel.send({ embeds: [embed] });
-          this.jobList.filter(
-            v => v.type === '반복' || (v.type === '한번만' && v.time > new Date()),
-          );
-        },
-      );
-      /** 등록 리스트에 삽입 */
-      this.jobList.push({
-        type: '반복',
-        message: message,
-        time: `${hour.toString().padStart(2, '0')}:${minute
-          .toString()
-          .padStart(2, '0')} , ${parseDayToString(day)}`,
-      });
-      // schedule.scheduleJob(`* * * * * *`, () => channel.send({ embeds: [embed] }));
-      interaction.reply({
-        content: `반복 메시지가 등록되었습니다. 시간 : __**${hour
-          .toString()
-          .padStart(2, '0')}:${minute
-          .toString()
-          .padStart(2, '0')}**__ , 요일 : __**${parseDayToString(day)}**__`,
-      });
-    } else if (options.getSubcommand() === '조회') {
-    } else if (options.getSubcommand() === '취소') {
-      job.cancel();
-      interaction.reply({ content: '처리 되었습니다.' });
-    }
+    //   if (!interaction.isChatInputCommand()) return;
+    //   const today = new Date();
+    //   const { options } = interaction;
+    //   const message = options.getString('메시지');
+    //   const year = options.getInteger('년도');
+    //   const month = options.getInteger('월');
+    //   const date = options.getInteger('일');
+    //   const hour = options.getInteger('시간');
+    //   const minute = options.getInteger('분');
+    //   const channel = options.getChannel('채널');
+    //   const day = options?.data[0]?.options[2]?.value;
+    //   const totalDate = new Date(year, month - 1, date, hour, minute);
+    //   const embed = new EmbedBuilder({
+    //     title: message,
+    //   });
+    //   if (options.getSubcommand() === '반복안함') {
+    //     if (today > totalDate)
+    //       return interaction.reply({ content: '현재보다 이후 시간을 입력해주세요.' });
+    //     job = schedule.scheduleJob(convertUTC(totalDate), () => channel.send({ embeds: [embed] }));
+    //     this.jobList.push({
+    //       type: '한번만',
+    //       message: message,
+    //       time: totalDate,
+    //     });
+    //     interaction.reply({
+    //       content: `${year}년${month}월${date}일 ${hour}:${
+    //         minute < 10 ? '0' + minute : minute
+    //       }에 메시지가 등록되었습니다.`,
+    //     });
+    //   } else if (options.getSubcommand() === '반복') {
+    //     job = schedule.scheduleJob(
+    //       `0 ${minute} ${convertUTC(hour)} * * ${day !== 7 ? day : '*'}`,
+    //       () => {
+    //         channel.send({ embeds: [embed] });
+    //         this.jobList.filter(
+    //           v => v.type === '반복' || (v.type === '한번만' && v.time > new Date()),
+    //         );
+    //       },
+    //     );
+    //     /** 등록 리스트에 삽입 */
+    //     this.jobList.push({
+    //       type: '반복',
+    //       message: message,
+    //       time: `${hour.toString().padStart(2, '0')}:${minute
+    //         .toString()
+    //         .padStart(2, '0')} , ${parseDayToString(day)}`,
+    //     });
+    //     // schedule.scheduleJob(`* * * * * *`, () => channel.send({ embeds: [embed] }));
+    //     interaction.reply({
+    //       content: `반복 메시지가 등록되었습니다. 시간 : __**${hour
+    //         .toString()
+    //         .padStart(2, '0')}:${minute
+    //         .toString()
+    //         .padStart(2, '0')}**__ , 요일 : __**${parseDayToString(day)}**__`,
+    //     });
+    //   } else if (options.getSubcommand() === '조회') {
+    //   } else if (options.getSubcommand() === '취소') {
+    //     job.cancel();
+    //     interaction.reply({ content: '처리 되었습니다.' });
+    //   }
   },
 };

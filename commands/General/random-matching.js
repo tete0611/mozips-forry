@@ -14,6 +14,9 @@ module.exports = {
             .setDescription('분 단위로 입력해 주세요.')
             .setMinValue(2)
             .setMaxValue(120),
+        )
+        .addBooleanOption(option =>
+          option.setName('선생님').setDescription('선생님들과 매칭할지 여부'),
         ),
     )
     .addSubcommand(subCommand =>

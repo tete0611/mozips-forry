@@ -1,11 +1,13 @@
-const { format } = require('date-fns');
+const { format, addMinutes } = require('date-fns');
 const { ko } = require('date-fns/locale/ko');
+const { ChannelType, EmbedBuilder, Colors } = require('discord.js');
+const schedule = require('node-schedule');
 
 module.exports = {
   /**
    * 시간 포맷 함수
-   * @param date iso 날짜
-   * @param dateFormat 포맷형식(선택)
+   * @param { Date } date iso 날짜
+   * @param { string } dateFormat 포맷형식(선택)
    */
   formatToUtc: (date, dateFormat) => {
     return date
@@ -16,7 +18,7 @@ module.exports = {
   },
   /**
    * 한국시간 -> 영국시간(-9시간) 변환함수
-   * @param data 날짜(date time)
+   * @param { Date } data 날짜(date time)
    *
    */
   convertUTC: date => {
@@ -44,6 +46,68 @@ module.exports = {
         return '서버에러발생: 관리자에게 문의해주세요.';
       default:
         return response.body;
+    }
+  },
+  /**
+   * 랜덤매칭 2차원 멤버배열 제작함수
+   * @param {import('discord.js').GuildMember[]} arr 랜덤매칭될 1차원 멤버배열
+   * @returns {import('discord.js').GuildMember[][]} 2차원 멤버 배열
+   */
+  onTwoDimensions: arr => {
+    const result = [];
+    const loop = arr.length;
+    for (let i = 2; i <= loop; i += 2) {
+      result.push([arr.pop(i - 1), arr.pop(i)]);
+      if (arr.length === 1) result.at(-1).push(arr.pop(i + 1));
+    }
+    return result;
+  },
+  /**
+   * 랜덤매칭 함수
+   * @param {import('discord.js').GuildMember[]} memberList 매칭 참가자의 1차원 배열
+   * @param {import('discord.js').Interaction} interaction 해당 interaction 객체
+   * @param {number} limitTime 제한시간
+   * @param {Date} today 현재시각
+   */
+  onNormalMatch: async (memberList, interaction, limitTime, today) => {
+    const { guild } = interaction;
+    /** 전송할 임베드 */
+    const greeting = new EmbedBuilder({
+      title: ':wave: 랜덤방에 초대되었습니다! :wave:',
+      description: `자유롭게 채팅&대화를 나누세요!\n방에 혼자 남았을 경우 방이 자동삭제 됩니다.\n\n :wave: **Welcome to Random Room!** :wave:\nFeel free to talk and chat.\nIf you are left alone, the room will be automatically deleted.\n${memberList
+        .map(member => `<@${member.user.id}>`)
+        .join(' ')}`,
+      color: Colors.Yellow,
+      fields: [
+        { name: '\u200B', value: '\u200B' },
+        {
+          name: '제한시간 (Time Limit)',
+          value: limitTime ? `__${limitTime} min__` : '__없음__',
+        },
+      ],
+    });
+    const newChannel = await guild.channels.create({
+      name: `랜덤방`,
+      type: ChannelType.GuildVoice,
+      parent: process.env.RANDOM_ROOM_PARENT_ID,
+      userLimit: memberList.length,
+    });
+    newChannel.send({
+      embeds: [greeting],
+    });
+    memberList.forEach(member => member.voice.setChannel(newChannel));
+    if (limitTime) {
+      schedule.scheduleJob(addMinutes(today, limitTime - 1), async () => {
+        const room = await guild.channels.cache.get(newChannel.id);
+        if (room) await newChannel.send({ content: '1분 남았습니다. 대화를 마무리해주세요!' });
+        else {
+          job_1.cancel();
+        }
+      });
+      const job_1 = schedule.scheduleJob(addMinutes(today, limitTime), async () => {
+        const room = await guild.channels.cache.get(newChannel.id);
+        if (room) await newChannel.delete();
+      });
     }
   },
 };
