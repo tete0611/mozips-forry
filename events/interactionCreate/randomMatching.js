@@ -31,9 +31,6 @@ module.exports = {
       const { commandName, options } = interaction;
       if (commandName === '랜덤매칭') {
         if (options.getSubcommand() === '개인') {
-          await interaction.deferReply({
-            ephemeral: true,
-          });
           const {
             client,
             user: ownerUser,
@@ -53,6 +50,9 @@ module.exports = {
               content: '대기방에 충분한 사용자가 없어요.',
               ephemeral: true,
             });
+          await interaction.deferReply({
+            ephemeral: true,
+          });
           /** 랜덤으로 사용자 선정 */
           const randomNumber = ~~(Math.random() * filterMembers.length);
           /** 선정된 사용자의 Member객체 */
