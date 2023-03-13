@@ -15,8 +15,20 @@ module.exports = {
     const jobs = await Schema.find();
     if (jobs.length !== 0) {
       jobs.map(v => {
-        const date = new Date(v.reservedAt);
-        schedule.scheduleJob(convertUTC(date), () => console.log('실행합니데이'));
+        if (v.isRepeat) {
+          const { repeatAt } = v;
+          schedule.scheduleJob(
+            `0 ${repeatAt.minute} ${convertUTC(repeatAt.hour)} * * ${
+              repeatAt.day !== 7 ? repeatAt.day : '*'
+            }`,
+            () => {
+              console.log('반복실행합니데이');
+            },
+          );
+        } else {
+          const date = new Date(v.reservedAt);
+          schedule.scheduleJob(convertUTC(date), () => console.log('실행합니데이'));
+        }
       });
 
       console.log(jobs.length + '개의 예약메시지가 등록되었습니다.');

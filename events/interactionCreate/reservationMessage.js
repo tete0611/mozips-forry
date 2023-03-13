@@ -1,7 +1,7 @@
 const { Events, EmbedBuilder, Colors } = require('discord.js');
-const { convertUTC, formatToUtc } = require('../../common/function');
-const schedule = require('node-schedule');
+const { formatToUtc } = require('../../common/function');
 const Schema = require('../../models/reservationMessage');
+const { parseDayToString } = require('../../common/parse');
 
 module.exports = {
   name: Events.InteractionCreate,
@@ -39,7 +39,6 @@ module.exports = {
         userId: user.id,
         userNickname: member.nickname,
       });
-      // schedule.scheduleJob(convertUTC(totalDate), () => channel.send({ embeds: [embed] }));
       newJob.save();
       interaction.reply({
         content: `${year}년${month}월${date}일 ${hour}:${
@@ -47,10 +46,24 @@ module.exports = {
         }에 메시지가 등록되었습니다.`,
       });
     } else if (options.getSubcommand() === '반복') {
-      schedule.scheduleJob(`0 ${minute} ${convertUTC(hour)} * * ${day !== 7 ? day : '*'}`, () => {
-        channel.send({ embeds: [embed] });
-        this.jobList.filter(v => v.type === '반복' || (v.type === '한번만' && v.time > new Date()));
+      const newJob = new Schema({
+        isRepeat: true,
+        message: message,
+        repeatAt: { minute: minute, hour: hour, day: day },
+        userId: user.id,
+        userNickname: member.nickname,
       });
+      newJob.save().then(() =>
+        interaction.reply({
+          content: `${parseDayToString(
+            day,
+          )}요일 ${hour}시 ${minute}분 마다 메시지가 등록되었습니다.`,
+        }),
+      );
+
+      // schedule.scheduleJob(`0 ${minute} ${convertUTC(hour)} * * ${day !== 7 ? day : '*'}`, () => {
+      //   channel.send({ embeds: [embed] });
+      // });
     } else if (options.getSubcommand() === '조회') {
       const jobs = await Schema.find();
       if (jobs.length === 0)
@@ -58,7 +71,14 @@ module.exports = {
       const jobEmbeds = jobs.map(v => {
         return new EmbedBuilder({
           title: v.message,
-          description: `시간 : **${formatToUtc(v.reservedAt)}** / 주인 : **${v.userNickname}**`,
+          description: `시간 : **${
+            v.isRepeat
+              ? `${parseDayToString(v.repeatAt.day)}요일 ${String(v.repeatAt.hour).padStart(
+                  2,
+                  '0',
+                )}:${v.repeatAt.minute} 마다`
+              : formatToUtc(v.reservedAt)
+          }** / 주인 : **${v.userNickname}** / 반복 : **${v.isRepeat ? 'O' : 'X'}**`,
           color: Colors.Yellow,
           footer: { text: `ID : ${v._id.toString()}` },
         });

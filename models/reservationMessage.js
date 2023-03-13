@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const rsm = new mongoose.Schema({
   message: String,
   reservedAt: String,
+  repeatAt: { hour: Number, minute: Number, day: Number },
   userId: String,
   userNickname: String,
   isRepeat: Boolean,
