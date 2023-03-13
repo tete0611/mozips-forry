@@ -1,6 +1,9 @@
 const { MessageFlags, ChannelType, Events, EmbedBuilder, Colors } = require('discord.js');
 const { row_1 } = require('../../components/randomMatching');
 const { onTwoDimensions, onNormalMatch } = require('../../common/function');
+const { env } = process;
+
+const teacherRoomId = env.TEACHER_ROOM_ID;
 
 const shuffle = array => {
   array.sort(() => Math.random() - 0.5);
@@ -14,7 +17,7 @@ module.exports = {
   once: false,
   /**
    *
-   * @param {import("discord.js").Interaction} interaction
+   * @param {import("discord.js").CommandInteraction} interaction
    */
   async execute(interaction) {
     // const greeting = new EmbedBuilder({
@@ -122,34 +125,47 @@ module.exports = {
           });
           /** 전체매칭인 경우 */
         } else if (options.getSubcommand() === '전체') {
-          const { options: thisOptions, channel: waitingRoom } = interaction;
+          const { options: thisOptions, channel: waitingRoom, guild } = interaction;
           const today = new Date();
           const limitTime = thisOptions.getInteger('제한시간설정');
           const isTeacher = thisOptions.getBoolean('선생님');
-
           const waitingRoomMembers = shuffle(waitingRoom.members.map(v => v));
           const waitingRoomMemberLength = waitingRoomMembers.length;
-          const teacherMembers = waitingRoomMembers.filter(member =>
-            member.roles.cache.some(v => v.name === '선생님'),
-          );
-          if (isTeacher && teacherMembers.length)
+          let resultMembers = null;
+          /** 선생님 매칭일 경우 */
+          if (isTeacher) {
+            const teacherRoom = await guild.channels.cache.get(teacherRoomId);
+            const teacherRoomMembers = shuffle(teacherRoom.members.map(v => v));
+            const teacherRoomMembersLength = teacherRoomMembers.length;
+            if (teacherRoomMembersLength < 1)
+              return interaction.reply({ content: '대기방에 선생님이 없어요.', ephemeral: true });
+            if (waitingRoomMemberLength < 1)
+              return interaction.reply({ content: '대기방에 사람이 없어요.', ephemeral: true });
+
+            const combineRoomMembers = [];
+            for (let i = 0; i < Math.min(teacherRoomMembersLength, waitingRoomMemberLength); i++) {
+              combineRoomMembers.push(teacherRoomMembers.pop(0));
+              combineRoomMembers.push(waitingRoomMembers.pop(0));
+            }
+            resultMembers = onTwoDimensions(combineRoomMembers);
+            /** 일반 매칭일 경우 */
+          } else {
             if (waitingRoomMemberLength < 2)
               return interaction.reply({
                 content: '대기방에 충분한 사람이 없어요.',
                 ephemeral: true,
               });
-            else await interaction.reply({ content: '매칭중.....' });
-          /** 2차원 배열 제작 */
-          const resultMembers = onTwoDimensions(waitingRoomMembers);
+            /** 2차원 배열 제작 */
+            resultMembers = onTwoDimensions(waitingRoomMembers);
+          }
+          await interaction.reply({ content: '매칭중.....' });
           /** 비동기 랜덤매칭 실행 */
           Promise.allSettled(
             resultMembers.map(v => onNormalMatch(v, interaction, limitTime, today)),
           )
             .catch(err => console.log('랜덤매칭 에러발생 : ' + err))
             .finally(() => {
-              interaction.editReply({
-                content: `__${waitingRoomMemberLength}명__이 매칭되었습니다.`,
-              });
+              interaction.editReply({ content: `매칭되었습니다` });
             });
         }
       } else if (
