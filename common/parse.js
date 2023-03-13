@@ -1,4 +1,5 @@
 module.exports = {
+  /** @param {number} num  */
   parseDayToString: num => {
     switch (num) {
       case 0:
@@ -16,7 +17,7 @@ module.exports = {
       case 6:
         return '토';
       case 7:
-        return '모두';
+        return '모든';
     }
   },
   formatTo: minute => {

@@ -8,8 +8,6 @@ const {
 } = require('discord.js');
 const { embed, components } = require('../../components/embedBuilder');
 
-let prevInteraction;
-
 module.exports = {
   name: Events.InteractionCreate,
   once: false,
@@ -57,9 +55,6 @@ module.exports = {
         const inputCollector = buttonInteraction.channel.createMessageComponentCollector({
           componentType: ComponentType.TextInput,
           time: 30000,
-        });
-        inputCollector.on('collect', async m => {
-          console.log('발동요');
         });
       });
       // /** 모달 콜렉터 등록 */
