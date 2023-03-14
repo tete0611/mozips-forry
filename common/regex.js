@@ -5,6 +5,7 @@ const REG_EXP = {
   mension: /<?@\S+/g,
   hashTag: /<?#\S+/g,
   hyperLink: /(http|https):\S+/g,
+  emoji: /:\S+:/g,
 };
 module.exports = {
   REG_EXP,

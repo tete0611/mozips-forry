@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const cnfcpr = new mongoose.Schema({
-  count: { type: String },
+  count: { type: Number },
   userId: String,
   date: String,
 });
