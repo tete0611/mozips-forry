@@ -21,13 +21,17 @@ module.exports = {
             `0 ${repeatAt.minute} ${convertUTC(repeatAt.hour)} * * ${
               repeatAt.day !== 7 ? repeatAt.day : '*'
             }`,
-            () => {
-              console.log('반복실행합니데이');
+            async () => {
+              const channel = await client.channels.cache.get(v.channelId);
+              channel.send(v.message);
             },
           );
         } else {
           const date = new Date(v.reservedAt);
-          schedule.scheduleJob(convertUTC(date), () => console.log('실행합니데이'));
+          schedule.scheduleJob(convertUTC(date), async () => {
+            const channel = await client.channels.cache.get(v.channelId);
+            channel.send(v.message);
+          });
         }
       });
 

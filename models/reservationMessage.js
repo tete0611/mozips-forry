@@ -7,6 +7,7 @@ const rsm = new mongoose.Schema({
   userId: String,
   userNickname: String,
   isRepeat: Boolean,
+  channelId: String,
 });
 
 const Model = (module.exports = mongoose.model('reservationMessage', rsm));
