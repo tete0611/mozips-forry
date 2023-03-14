@@ -52,6 +52,7 @@ module.exports = {
         .replace(REG_EXP.mension, '')
         .replace(REG_EXP.hashTag, '')
         .replace(REG_EXP.hyperLink, '')
+        .replace(REG_EXP.emoji, '')
         .replace(/\d/g, '')
         // eslint-disable-next-line no-useless-escape
         .replace(/[\{\}\[\]\/?.,;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]/g, '')
