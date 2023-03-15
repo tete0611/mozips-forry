@@ -48,6 +48,7 @@ module.exports = {
         return response.body;
     }
   },
+
   /**
    * 랜덤매칭 2차원 멤버배열 제작함수
    * @param {import('discord.js').GuildMember[]} arr 랜덤매칭될 1차원 멤버배열
@@ -62,6 +63,7 @@ module.exports = {
     }
     return result;
   },
+
   /**
    * 랜덤매칭 함수
    * @param {import('discord.js').GuildMember[]} memberList 매칭 참가자의 1차원 배열
@@ -70,7 +72,9 @@ module.exports = {
    * @param {Date} today 현재시각
    */
   onNormalMatch: async (memberList, interaction, limitTime, today) => {
-    const { guild } = interaction;
+    const { guild, client } = interaction;
+    const waitingRoom = await client.channels.fetch(process.env.WAITING_ROOM_ID);
+    const teacherRoom = await client.channels.fetch(process.env.TEACHER_ROOM_ID);
     /** 전송할 임베드 */
     const greeting = new EmbedBuilder({
       title: ':wave: 랜덤방에 초대되었습니다! :wave:',
@@ -97,6 +101,8 @@ module.exports = {
     });
     memberList.forEach(member => member.voice.setChannel(newChannel));
     if (limitTime) {
+      const isTeacher = memberList[0].roles.cache.some(v => v.name === '한국어 선생님');
+
       schedule.scheduleJob(addMinutes(today, limitTime - 1), async () => {
         const room = await guild.channels.cache.get(newChannel.id);
         if (room) await newChannel.send({ content: '1분 남았습니다. 대화를 마무리해주세요!' });
@@ -106,8 +112,20 @@ module.exports = {
       });
       const job_1 = schedule.scheduleJob(addMinutes(today, limitTime), async () => {
         const room = await guild.channels.cache.get(newChannel.id);
-        if (room) await newChannel.delete();
+        if (room) {
+          if (isTeacher) await memberList[0].voice.setChannel(teacherRoom);
+          else memberList[0].voice.setChannel(waitingRoom);
+        }
       });
     }
+  },
+  /**
+   * 멤버가 해당 역할이 있는지 판별해주는 함수
+   * @param {import('discord.js').GuildMember} member 멤버변수
+   * @param {string} roleName 역할명
+   * @returns {boolean}
+   */
+  onCheckRole: (member, roleName) => {
+    return member.roles.cache.some(v => v.name === roleName);
   },
 };
