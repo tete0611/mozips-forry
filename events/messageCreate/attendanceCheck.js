@@ -39,7 +39,7 @@ module.exports = {
         {
           userId: author.id,
         },
-        { $set: { count: user.count + 1 /** , date: date */ } },
+        { $set: { count: user.count + 1, date: date } },
       )
         .then(() => {
           Schema.find()
