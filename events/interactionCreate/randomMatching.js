@@ -20,13 +20,6 @@ module.exports = {
    * @param {import("discord.js").CommandInteraction} interaction
    */
   async execute(interaction) {
-    // const greeting = new EmbedBuilder({
-    //   title: ':wave: 랜덤방에 초대되었습니다! :wave:',
-    //   description:
-    //     '자유롭게 채팅&대화를 나누세요!\n방에 혼자 남았을 경우 방이 자동삭제 됩니다.\n\n :wave: **Welcome to Random Room!** :wave:\nFeel free to talk and chat.\nIf you are left alone, the room will be automatically deleted.',
-    //   color: Colors.Yellow,
-    // });
-
     try {
       const { commandName, options } = interaction;
       if (commandName === '랜덤매칭') {
@@ -95,7 +88,7 @@ module.exports = {
                 userLimit: 2,
               });
               const greeting = new EmbedBuilder({
-                title: ':wave: 랜덤방에 초대되었습니다! :wave:',
+                title: ':wave: Welcome to random VC :wave:',
                 description: `자유롭게 채팅&대화를 나누세요!\n방에 혼자 남았을 경우 방이 자동삭제 됩니다.\n\n :wave: **Welcome to Random Room!** :wave:\nFeel free to talk and chat.\nIf you are left alone, the room will be automatically deleted.\n<@${ownerUser.id}> <@${selectedUser.id}>`,
                 color: Colors.Yellow,
               });

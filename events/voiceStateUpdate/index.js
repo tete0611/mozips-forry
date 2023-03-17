@@ -28,7 +28,7 @@ module.exports = {
               if (onCheckRole(member, '한국어 선생님')) await member.voice.setChannel(teacherRoom);
               else await member.voice.setChannel(waitingRoom);
             });
-            await wait(500);
+            await wait(3000);
             await nowChannel.delete();
           } catch (error) {
             console.log('Channel Delete Error : ' + error);

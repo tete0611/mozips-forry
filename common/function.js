@@ -77,10 +77,12 @@ module.exports = {
     const teacherRoom = await client.channels.fetch(process.env.TEACHER_ROOM_ID);
     /** 전송할 임베드 */
     const greeting = new EmbedBuilder({
-      title: ':wave: 랜덤방에 초대되었습니다! :wave:',
-      description: `자유롭게 채팅&대화를 나누세요!\n방에 혼자 남았을 경우 방이 자동삭제 됩니다.\n\n :wave: **Welcome to Random Room!** :wave:\nFeel free to talk and chat.\nIf you are left alone, the room will be automatically deleted.\n${memberList
+      title: ':wave: Welcome to random VC :wave:',
+      description: `${memberList
         .map(member => `<@${member.user.id}>`)
-        .join(' ')}`,
+        .join(
+          ' and ',
+        )} are matched\n\n**아래 사진에서 대화 주제를 골라보세요!**\nChoose conversation topics from the picture below.\n당신이 방에서 나가면 이 채널이 자동으로 없어집니다. 주의하세요!\nIf you leave this channel, the channel will be automatically deleted. Be careful!\n\n**더 재미있는 대화를 위한 명령어**\nCommands for more fun conversation\n__/잰말놀이__:(tongue-twister sentences) 모집스봇이 한국어 잰말놀이 문장을 랜덤으로 보내줍니다.\n__/절대음감__: (tongue-twister words) 모집스봇이 발음하기 어려운 한국어 단어를 랜덤으로 보내줍니다.\n__/초성게임__: 모집스봇이 랜덤으로 초성을 제시합니다.`,
       color: Colors.Yellow,
       fields: [
         { name: '\u200B', value: '\u200B' },
