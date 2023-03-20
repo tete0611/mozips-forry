@@ -130,4 +130,12 @@ module.exports = {
   onCheckRole: (member, roleName) => {
     return member.roles.cache.some(v => v.name === roleName);
   },
+  /**
+   * 랜덤한 배열값을 리턴하는 함수
+   * @param {T[]} array 배열
+   * @returns {T}
+   */
+  random: array => {
+    return array[~~(Math.random() * array.length)];
+  },
 };
