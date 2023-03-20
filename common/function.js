@@ -1,6 +1,6 @@
 const { format, addMinutes } = require('date-fns');
 const { ko } = require('date-fns/locale/ko');
-const { ChannelType, EmbedBuilder, Colors } = require('discord.js');
+const { ChannelType, EmbedBuilder, Colors, AttachmentBuilder } = require('discord.js');
 const schedule = require('node-schedule');
 
 module.exports = {
@@ -76,6 +76,8 @@ module.exports = {
     const waitingRoom = await client.channels.fetch(process.env.WAITING_ROOM_ID);
     const teacherRoom = await client.channels.fetch(process.env.TEACHER_ROOM_ID);
     /** 전송할 임베드 */
+    const topic = new AttachmentBuilder('https://i.esdrop.com/d/f/jXycTwE2IA/wgnSDsV87P.png');
+    const topic_en = new AttachmentBuilder('https://i.esdrop.com/d/f/jXycTwE2IA/JbQxHVQjDf.png');
     const greeting = new EmbedBuilder({
       title: ':wave: Welcome to random VC :wave:',
       description: `${memberList
@@ -91,6 +93,7 @@ module.exports = {
           value: limitTime ? `__${limitTime} min__` : '__없음__',
         },
       ],
+      // image: { url: 'https://i.esdrop.com/d/f/jXycTwE2IA/cdxBtLlH5o.png' },
     });
     const newChannel = await guild.channels.create({
       name: `랜덤방`,
@@ -100,6 +103,7 @@ module.exports = {
     });
     newChannel.send({
       embeds: [greeting],
+      files: [topic, topic_en],
     });
     memberList.forEach(member => member.voice.setChannel(newChannel));
     if (limitTime) {
@@ -129,5 +133,13 @@ module.exports = {
    */
   onCheckRole: (member, roleName) => {
     return member.roles.cache.some(v => v.name === roleName);
+  },
+  /**
+   * 랜덤한 배열값을 리턴하는 함수
+   * @param {T[]} array 배열
+   * @returns {T}
+   */
+  random: array => {
+    return array[~~(Math.random() * array.length)];
   },
 };
