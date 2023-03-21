@@ -93,7 +93,7 @@ module.exports = {
       fields: [
         { name: '\u200B', value: '\u200B' },
         {
-          name: '제한시간 (Time Limit)',
+          name: ':timer: 제한시간 (Time Limit)',
           value: limitTime ? `__${limitTime} min__` : '__없음__',
         },
       ],

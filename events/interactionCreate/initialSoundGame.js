@@ -1,31 +1,31 @@
-const { Events } = require('discord.js');
+const { Events, EmbedBuilder, Colors } = require('discord.js');
 const { getRandomElement } = require('../../common/function');
 
 const syllable = [
-  'ㄱㅇ',
-  'ㄱㅂ',
-  'ㄱㅈ',
-  'ㄱㄹ',
-  'ㄴㅁ',
-  'ㄴㅇ',
-  'ㄴㅈ',
-  'ㄷㄹ',
-  'ㅇㅍ',
-  'ㅅㅇ',
-  'ㅅㄹ',
-  'ㅁㅇ',
-  'ㅎㅁ',
-  'ㅅㅎ',
-  'ㅁㄱ',
-  'ㅁㅅ',
-  'ㅋㅍ',
-  'ㄹㅁ',
-  'ㅎㄱ',
-  'ㅎㅂ',
-  'ㅂㅇ',
-  'ㅇㅈ',
-  'ㄹㅇ',
-  'ㅇㅂ',
+  'ㄱ ㅇ',
+  'ㄱ ㅂ',
+  'ㄱ ㅈ',
+  'ㄱ ㄹ',
+  'ㄴ ㅁ',
+  'ㄴ ㅇ',
+  'ㄴ ㅈ',
+  'ㄷ ㄹ',
+  'ㅇ ㅍ',
+  'ㅅ ㅇ',
+  'ㅅ ㄹ',
+  'ㅁ ㅇ',
+  'ㅎ ㅁ',
+  'ㅅ ㅎ',
+  'ㅁ ㄱ',
+  'ㅁ ㅅ',
+  'ㅋ ㅍ',
+  'ㄹ ㅁ',
+  'ㅎ ㄱ',
+  'ㅎ ㅂ',
+  'ㅂ ㅇ',
+  'ㅇ ㅈ',
+  'ㄹ ㅇ',
+  'ㅇ ㅂ',
 ];
 
 module.exports = {
@@ -37,6 +37,10 @@ module.exports = {
    */
   async execute(interaction) {
     if (interaction.commandName !== '초성게임') return;
-    await interaction.reply({ content: getRandomElement(syllable) });
+    await interaction.reply({
+      embeds: [
+        new EmbedBuilder({ title: `**${getRandomElement(syllable)}**`, color: Colors.Yellow }),
+      ],
+    });
   },
 };
