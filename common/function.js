@@ -2,6 +2,7 @@ const { format, addMinutes } = require('date-fns');
 const { ko } = require('date-fns/locale/ko');
 const { ChannelType, EmbedBuilder, Colors, AttachmentBuilder } = require('discord.js');
 const schedule = require('node-schedule');
+const { getImageUrl } = require('./parse');
 
 module.exports = {
   /**
@@ -16,18 +17,20 @@ module.exports = {
         })
       : '-';
   },
+
   /**
    * 한국시간 -> 영국시간(-9시간) 변환함수
    * @param { Date } data 날짜(date time)
    *
    */
-  convertUTC: date => {
+  calcGMTToUTC: date => {
     if (typeof date === 'object' && date instanceof Date) {
       return date.setHours(date.getHours() - 9);
     } else if (typeof date === 'number') {
       return date >= 9 ? date - 9 : date + 15;
     }
   },
+
   /**
    * 파파고에러 함수
    * @param {import('request').Response} response
@@ -54,7 +57,7 @@ module.exports = {
    * @param {import('discord.js').GuildMember[]} arr 랜덤매칭될 1차원 멤버배열
    * @returns {import('discord.js').GuildMember[][]} 2차원 멤버 배열
    */
-  onTwoDimensions: arr => {
+  getTwoDimensions: arr => {
     const result = [];
     const loop = arr.length;
     for (let i = 2; i <= loop; i += 2) {
@@ -76,8 +79,9 @@ module.exports = {
     const waitingRoom = await client.channels.fetch(process.env.WAITING_ROOM_ID);
     const teacherRoom = await client.channels.fetch(process.env.TEACHER_ROOM_ID);
     /** 전송할 임베드 */
-    const topic = new AttachmentBuilder('https://i.esdrop.com/d/f/jXycTwE2IA/wgnSDsV87P.png');
-    const topic_en = new AttachmentBuilder('https://i.esdrop.com/d/f/jXycTwE2IA/JbQxHVQjDf.png');
+    const imageUrl = getImageUrl(today);
+    const topic = new AttachmentBuilder(imageUrl.ko);
+    const topic_en = new AttachmentBuilder(imageUrl.en);
     const greeting = new EmbedBuilder({
       title: ':wave: Welcome to random VC :wave:',
       description: `${memberList
@@ -93,7 +97,6 @@ module.exports = {
           value: limitTime ? `__${limitTime} min__` : '__없음__',
         },
       ],
-      // image: { url: 'https://i.esdrop.com/d/f/jXycTwE2IA/cdxBtLlH5o.png' },
     });
     const newChannel = await guild.channels.create({
       name: `랜덤방`,
@@ -125,21 +128,19 @@ module.exports = {
       });
     }
   },
+
   /**
    * 멤버가 해당 역할이 있는지 판별해주는 함수
    * @param {import('discord.js').GuildMember} member 멤버변수
    * @param {string} roleName 역할명
    * @returns {boolean}
    */
-  onCheckRole: (member, roleName) => {
-    return member.roles.cache.some(v => v.name === roleName);
-  },
+  checkRole: (member, roleName) => member.roles.cache.some(v => v.name === roleName),
+
   /**
-   * 랜덤한 배열값을 리턴하는 함수
+   * 배열에서 랜덤한 값 하나를 리턴하는 함수
    * @param {T[]} array 배열
    * @returns {T}
    */
-  random: array => {
-    return array[~~(Math.random() * array.length)];
-  },
+  getRandomElement: array => array[~~(Math.random() * array.length)],
 };

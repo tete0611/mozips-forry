@@ -1,5 +1,5 @@
 const { Events } = require('discord.js');
-const { random } = require('../../common/function');
+const { getRandomElement } = require('../../common/function');
 
 const sentences = [
   '간장 공장 공장장은 강 공장장이고, 된장 공장 공장장은 공 공장장이다.',
@@ -36,6 +36,6 @@ module.exports = {
    */
   async execute(interaction) {
     if (interaction.commandName !== '잰말놀이') return;
-    await interaction.reply({ content: random(sentences) });
+    await interaction.reply({ content: getRandomElement(sentences) });
   },
 };

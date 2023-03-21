@@ -1,4 +1,4 @@
-const { formatToUtc, convertUTC } = require('../../common/function.js');
+const { formatToUtc, calcGMTToUTC } = require('../../common/function.js');
 const schedule = require('node-schedule');
 const Schema = require('../../models/reservationMessage');
 
@@ -18,7 +18,7 @@ module.exports = {
         if (v.isRepeat) {
           const { repeatAt } = v;
           schedule.scheduleJob(
-            `0 ${repeatAt.minute} ${convertUTC(repeatAt.hour)} * * ${
+            `0 ${repeatAt.minute} ${calcGMTToUTC(repeatAt.hour)} * * ${
               repeatAt.day !== 7 ? repeatAt.day : '*'
             }`,
             async () => {
@@ -28,7 +28,7 @@ module.exports = {
           );
         } else {
           const date = new Date(v.reservedAt);
-          schedule.scheduleJob(convertUTC(date), async () => {
+          schedule.scheduleJob(calcGMTToUTC(date), async () => {
             const channel = await client.channels.cache.get(v.channelId);
             channel.send(v.message);
           });

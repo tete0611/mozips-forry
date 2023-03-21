@@ -1,6 +1,6 @@
 const { MessageFlags, ChannelType, Events, EmbedBuilder, Colors } = require('discord.js');
 const { row_1 } = require('../../components/randomMatching');
-const { onTwoDimensions, onNormalMatch } = require('../../common/function');
+const { getTwoDimensions, onNormalMatch, getImageUrl } = require('../../common/function');
 const { env } = process;
 
 const teacherRoomId = env.TEACHER_ROOM_ID;
@@ -140,7 +140,7 @@ module.exports = {
               combineRoomMembers.push(teacherRoomMembers.pop(0));
               combineRoomMembers.push(waitingRoomMembers.pop(0));
             }
-            resultMembers = onTwoDimensions(combineRoomMembers);
+            resultMembers = getTwoDimensions(combineRoomMembers);
             /** 일반 매칭일 경우 */
           } else {
             if (waitingRoomMemberLength < 2)
@@ -149,7 +149,7 @@ module.exports = {
                 ephemeral: true,
               });
             /** 2차원 배열 제작 */
-            resultMembers = onTwoDimensions(waitingRoomMembers);
+            resultMembers = getTwoDimensions(waitingRoomMembers);
           }
           await interaction.reply({ content: '매칭중.....' });
           /** 비동기 랜덤매칭 실행 */
