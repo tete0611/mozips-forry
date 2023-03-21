@@ -1,5 +1,5 @@
 const { Events } = require('discord.js');
-const { onCheckRole } = require('../../common/function');
+const { checkRole } = require('../../common/function');
 const client = require('../../index');
 const parentId = process.env.RANDOM_ROOM_PARENT_ID;
 const wait = require('node:timers/promises').setTimeout;
@@ -25,7 +25,7 @@ module.exports = {
           const members = nowChannel.members.map(v => v);
           try {
             await members?.forEach(async member => {
-              if (onCheckRole(member, '한국어 선생님')) await member.voice.setChannel(teacherRoom);
+              if (checkRole(member, '한국어 선생님')) await member.voice.setChannel(teacherRoom);
               else await member.voice.setChannel(waitingRoom);
             });
             await wait(3000);

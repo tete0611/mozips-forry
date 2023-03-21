@@ -1,5 +1,5 @@
 const { Events } = require('discord.js');
-const { random } = require('../../common/function');
+const { getRandomElement } = require('../../common/function');
 
 const words = [
   '초코칩머핀',
@@ -33,6 +33,6 @@ module.exports = {
    */
   async execute(interaction) {
     if (interaction.commandName !== '절대음감') return;
-    await interaction.reply({ content: random(words) });
+    await interaction.reply({ content: getRandomElement(words) });
   },
 };
