@@ -2,7 +2,7 @@ const { Events, ChannelType } = require('discord.js');
 const { joinVoiceChannel } = require('@discordjs/voice');
 const { REG_EXP } = require('../../common/regex');
 const { warningKoreanEmbed } = require('../../components/messageCreate');
-const { onCheckRole } = require('../../common/function');
+const { checkRole } = require('../../common/function');
 const { env } = process;
 let messageCount = 0;
 const welcomeChannelId = env.WELCOME_CHANNEL_ID;
@@ -32,7 +32,7 @@ module.exports = {
   async execute(message) {
     if (message.author.bot) return;
     if (message.channelId === welcomeChannelId) {
-      if (!onCheckRole(message.member, 'Manager')) {
+      if (!checkRole(message.member, 'Manager')) {
         messageCount += 1;
         if (messageCount === 20) {
           message.channel.send({
