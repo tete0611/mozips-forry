@@ -1,8 +1,5 @@
-const { format, addMinutes } = require('date-fns');
+const { format } = require('date-fns');
 const { ko } = require('date-fns/locale/ko');
-const { ChannelType, EmbedBuilder, Colors, AttachmentBuilder } = require('discord.js');
-const schedule = require('node-schedule');
-const { getImageUrl } = require('./parse');
 
 module.exports = {
   /**
@@ -68,68 +65,6 @@ module.exports = {
   },
 
   /**
-   * 랜덤매칭 함수
-   * @param {import('discord.js').GuildMember[]} memberList 매칭 참가자의 1차원 배열
-   * @param {import('discord.js').Interaction} interaction 해당 interaction 객체
-   * @param {number} limitTime 제한시간
-   * @param {Date} today 현재시각
-   */
-  onNormalMatch: async (memberList, interaction, limitTime, today) => {
-    const { guild, client } = interaction;
-    const waitingRoom = await client.channels.fetch(process.env.WAITING_ROOM_ID);
-    const teacherRoom = await client.channels.fetch(process.env.TEACHER_ROOM_ID);
-    /** 전송할 임베드 */
-    const imageUrl = getImageUrl(today);
-    const topic = new AttachmentBuilder(imageUrl.ko);
-    const topic_en = new AttachmentBuilder(imageUrl.en);
-    const greeting = new EmbedBuilder({
-      title: ':wave: Welcome to random VC :wave:',
-      description: `${memberList
-        .map(member => `<@${member.user.id}>`)
-        .join(
-          ' and ',
-        )} are matched\n\n**아래 사진에서 대화 주제를 골라보세요!**\nChoose conversation topics from the picture below.\n당신이 방에서 나가면 이 채널이 자동으로 없어집니다. 주의하세요!\nIf you leave this channel, the channel will be automatically deleted. Be careful!\n\n**더 재미있는 대화를 위한 명령어**\nCommands for more fun conversation\n__/잰말놀이__:(tongue-twister sentences) 모집스봇이 한국어 잰말놀이 문장을 랜덤으로 보내줍니다.\n__/절대음감__: (tongue-twister words) 모집스봇이 발음하기 어려운 한국어 단어를 랜덤으로 보내줍니다.\n__/초성게임__: 모집스봇이 랜덤으로 초성을 제시합니다.`,
-      color: Colors.Yellow,
-      fields: [
-        { name: '\u200B', value: '\u200B' },
-        {
-          name: ':timer: 제한시간 (Time Limit)',
-          value: limitTime ? `__${limitTime} min__` : '__없음__',
-        },
-      ],
-    });
-    const newChannel = await guild.channels.create({
-      name: `랜덤방`,
-      type: ChannelType.GuildVoice,
-      parent: process.env.RANDOM_ROOM_PARENT_ID,
-      userLimit: memberList.length,
-    });
-    newChannel.send({
-      embeds: [greeting],
-      files: [topic, topic_en],
-    });
-    memberList.forEach(member => member.voice.setChannel(newChannel));
-    if (limitTime) {
-      const isTeacher = memberList[0].roles.cache.some(v => v.name === '한국어 선생님');
-
-      schedule.scheduleJob(addMinutes(today, limitTime - 1), async () => {
-        const room = await guild.channels.cache.get(newChannel.id);
-        if (room) await newChannel.send({ content: '1분 남았습니다. 대화를 마무리해주세요!' });
-        else {
-          job_1.cancel();
-        }
-      });
-      const job_1 = schedule.scheduleJob(addMinutes(today, limitTime), async () => {
-        const room = await guild.channels.cache.get(newChannel.id);
-        if (room) {
-          if (isTeacher) await memberList[0].voice.setChannel(teacherRoom);
-          else memberList[0].voice.setChannel(waitingRoom);
-        }
-      });
-    }
-  },
-
-  /**
    * 멤버가 해당 역할이 있는지 판별해주는 함수
    * @param {import('discord.js').GuildMember} member 멤버변수
    * @param {string} roleName 역할명
@@ -143,4 +78,47 @@ module.exports = {
    * @returns {T}
    */
   getRandomElement: array => array[~~(Math.random() * array.length)],
+
+  /**
+   * 요일별 image url 반환 함수
+   * @param {Date} date 오늘날짜
+   * @typedef {Object} Topic
+   * @property {string} ko 한글토픽카드
+   * @property {string} en 영어토픽카드
+   * @returns {Topic}
+   */
+  getImageUrl: date => {
+    switch (date.getDay()) {
+      case 1:
+        return {
+          en: 'https://i.esdrop.com/d/f/jXycTwE2IA/JbQxHVQjDf.png',
+          ko: 'https://i.esdrop.com/d/f/jXycTwE2IA/wgnSDsV87P.png',
+        };
+      case 2:
+        return {
+          en: 'https://i.esdrop.com/d/f/jXycTwE2IA/gQNsPGTYUX.png',
+          ko: 'https://i.esdrop.com/d/f/jXycTwE2IA/3FraytNwMn.png',
+        };
+      case 3:
+        return {
+          en: 'https://i.esdrop.com/d/f/jXycTwE2IA/MIcVjeizFw.png',
+          ko: 'https://i.esdrop.com/d/f/jXycTwE2IA/erk0XMYbhM.png',
+        };
+      case 4:
+        return {
+          en: 'https://i.esdrop.com/d/f/jXycTwE2IA/suUEE2K96A.png',
+          ko: 'https://i.esdrop.com/d/f/jXycTwE2IA/GS3mIfFkC7.png',
+        };
+      case 5:
+        return {
+          en: 'https://i.esdrop.com/d/f/jXycTwE2IA/EV9yuQ6I5T.png',
+          ko: 'https://i.esdrop.com/d/f/jXycTwE2IA/VAHq8KaPsj.png',
+        };
+      default:
+        return {
+          en: 'https://i.esdrop.com/d/f/jXycTwE2IA/JbQxHVQjDf.png',
+          ko: 'https://i.esdrop.com/d/f/jXycTwE2IA/wgnSDsV87P.png',
+        };
+    }
+  },
 };
