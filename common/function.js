@@ -91,33 +91,33 @@ module.exports = {
     switch (date.getDay()) {
       case 1:
         return {
-          en: 'https://i.esdrop.com/d/f/jXycTwE2IA/JbQxHVQjDf.png',
           ko: 'https://i.esdrop.com/d/f/jXycTwE2IA/wgnSDsV87P.png',
+          en: 'https://i.esdrop.com/d/f/jXycTwE2IA/JbQxHVQjDf.png',
         };
       case 2:
         return {
-          en: 'https://i.esdrop.com/d/f/jXycTwE2IA/gQNsPGTYUX.png',
           ko: 'https://i.esdrop.com/d/f/jXycTwE2IA/3FraytNwMn.png',
+          en: 'https://i.esdrop.com/d/f/jXycTwE2IA/gQNsPGTYUX.png',
         };
       case 3:
         return {
-          en: 'https://i.esdrop.com/d/f/jXycTwE2IA/MIcVjeizFw.png',
-          ko: 'https://i.esdrop.com/d/f/jXycTwE2IA/erk0XMYbhM.png',
+          ko: 'https://i.esdrop.com/d/f/jXycTwE2IA/f9VJ9AVsui.png',
+          en: 'https://i.esdrop.com/d/f/jXycTwE2IA/3L4ga3QG8K.png',
         };
       case 4:
         return {
-          en: 'https://i.esdrop.com/d/f/jXycTwE2IA/suUEE2K96A.png',
-          ko: 'https://i.esdrop.com/d/f/jXycTwE2IA/GS3mIfFkC7.png',
+          ko: 'https://i.esdrop.com/d/f/jXycTwE2IA/R6k3ke57Hv.png',
+          en: 'https://i.esdrop.com/d/f/jXycTwE2IA/AkdPJgLNE6.png',
         };
       case 5:
         return {
-          en: 'https://i.esdrop.com/d/f/jXycTwE2IA/EV9yuQ6I5T.png',
-          ko: 'https://i.esdrop.com/d/f/jXycTwE2IA/VAHq8KaPsj.png',
+          ko: 'https://i.esdrop.com/d/f/jXycTwE2IA/lhsAQGpxWW.png',
+          en: 'https://i.esdrop.com/d/f/jXycTwE2IA/p0O8YMvijL.png',
         };
       default:
         return {
-          en: 'https://i.esdrop.com/d/f/jXycTwE2IA/JbQxHVQjDf.png',
           ko: 'https://i.esdrop.com/d/f/jXycTwE2IA/wgnSDsV87P.png',
+          en: 'https://i.esdrop.com/d/f/jXycTwE2IA/JbQxHVQjDf.png',
         };
     }
   },
