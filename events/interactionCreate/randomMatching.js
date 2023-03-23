@@ -36,8 +36,6 @@ const shuffle = array => {
  */
 const onNormalMatch = async (memberList, interaction, limitTime, today) => {
   const { guild, client } = interaction;
-  const waitingRoom = await client.channels.fetch(waitingRoomId);
-  const teacherRoom = await client.channels.fetch(teacherRoomId);
   /** 전송할 임베드 */
   const imageUrl = getImageUrl(today);
   const topic = new AttachmentBuilder(imageUrl.ko);
@@ -58,18 +56,44 @@ const onNormalMatch = async (memberList, interaction, limitTime, today) => {
       },
     ],
   });
+  const waitingRoom = await client.channels.fetch(waitingRoomId);
+  const teacherRoom = await client.channels.fetch(teacherRoomId);
+  const combineRoomMemberIds = [
+    ...waitingRoom.members.map(member => member.id),
+    ...teacherRoom.members.map(member => member.id),
+  ];
+  /** 랜덤방 생성 */
   const newChannel = await guild.channels.create({
     name: `랜덤방`,
     type: ChannelType.GuildVoice,
     parent: env.RANDOM_ROOM_PARENT_ID,
     userLimit: memberList.length,
   });
-  newChannel.send({
-    embeds: [greeting],
-    files: [topic, topic_en],
-  });
-  memberList.forEach(member => member.voice.setChannel(newChannel));
-  if (limitTime) {
+  /** 도중 이탈이 있는지 점검 */
+  let flag = true;
+  await Promise.all(
+    memberList.map(async member => {
+      if (!combineRoomMemberIds.includes(member.id)) {
+        await waitingRoom.send(
+          `__${member}__님이 매칭중 이탈하여 ${memberList
+            .filter(v => v.id !== member.id)
+            .map(v => `__${v}__`)
+            .join('님 ')}님과 매칭에 실패했어요. `,
+        );
+        newChannel.delete();
+        flag = false;
+        return;
+      }
+    }),
+  );
+  if (flag) {
+    memberList.forEach(member => member.voice.setChannel(newChannel));
+    newChannel.send({
+      embeds: [greeting],
+      files: [topic, topic_en],
+    });
+  }
+  if (limitTime && flag) {
     const isTeacher = memberList[0].roles.cache.some(v => v.name === '한국어 선생님');
 
     schedule.scheduleJob(addMinutes(today, limitTime - 1), async () => {
