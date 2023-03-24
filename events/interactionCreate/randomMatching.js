@@ -99,9 +99,7 @@ const onNormalMatch = async (memberList, interaction, limitTime, today) => {
     schedule.scheduleJob(addMinutes(today, limitTime - 1), async () => {
       const room = await guild.channels.cache.get(newChannel.id);
       if (room) await newChannel.send({ content: '1분 남았습니다. 대화를 마무리해주세요!' });
-      else {
-        job_1.cancel();
-      }
+      else job_1.cancel();
     });
     const job_1 = schedule.scheduleJob(addMinutes(today, limitTime), async () => {
       const room = await guild.channels.cache.get(newChannel.id);
