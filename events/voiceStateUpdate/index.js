@@ -1,7 +1,8 @@
 const { Events } = require('discord.js');
 const { checkRole } = require('../../common/function');
 const client = require('../../index');
-const parentId = process.env.RANDOM_ROOM_PARENT_ID;
+const { env } = process;
+const parentId = env.RANDOM_ROOM_PARENT_ID;
 const wait = require('node:timers/promises').setTimeout;
 
 module.exports = {
@@ -17,17 +18,14 @@ module.exports = {
     if (channel?.parent?.id === parentId && channel?.name === '랜덤방') {
       /** 이탈한 채널의 멤버가 혼자이고 채널이 존재한다면 */
       if (channel?.members.size === 1) {
-        const waitingRoom = await client.channels.fetch(process.env.WAITING_ROOM_ID);
-        const teacherRoom = await client.channels.fetch(process.env.TEACHER_ROOM_ID);
+        const waitingRoom = await client.channels.fetch(env.WAITING_ROOM_ID);
+        const teacherRoom = await client.channels.fetch(env.TEACHER_ROOM_ID);
         const nowChannel = await guild.channels.fetch(channelId);
-        // const fetchChannel = await guild.channels.cache.get(channelId);
         if (nowChannel) {
-          const members = nowChannel.members.map(v => v);
+          const member = nowChannel.members.at(0);
           try {
-            await members?.forEach(async member => {
-              if (checkRole(member, '한국어 선생님')) await member.voice.setChannel(teacherRoom);
-              else await member.voice.setChannel(waitingRoom);
-            });
+            if (checkRole(member, '한국어 선생님')) await member.voice.setChannel(teacherRoom);
+            else await member.voice.setChannel(waitingRoom);
             await wait(3000);
             await nowChannel.delete();
           } catch (error) {

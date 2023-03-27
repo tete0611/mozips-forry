@@ -4,7 +4,6 @@
 //   joinVoiceChannel,
 //   AudioPlayerStatus,
 //   createAudioPlayer,
-//   NoSubscriberBehavior,
 // } = require('@discordjs/voice');
 // const fs = require('fs');
 
@@ -24,19 +23,16 @@
 //       guildId: guildId,
 //       adapterCreator: guild.voiceAdapterCreator,
 //     });
-//     // const receiver = connection.receiver.;
-//     const audioPlayer = createAudioPlayer({
-//       behaviors: { noSubscriber: NoSubscriberBehavior.Pause },
-//     });
-//     connection.subscribe(audioPlayer);
-
 //     const fileName = `recording-${Date.now()}.pcm`;
 //     const writeStream = fs.createWriteStream(fileName);
-//     // const audioStream = receiver.createStream(message.member, { mode: 'pcm' });
-//     // audioStream.pipe(writeStream);
-//     audioPlayer.on(AudioPlayerStatus.Playing, () => {
-//       console.log('뭔가실행됨');
-//     });
+//     const receiver = connection.receiver;
+//     const audioPlayer = createAudioPlayer();
+//     // const audioResource = createAudioResource({
+//     //   input: './record.pcm',
+//     //   metadata: { channelId: message.member.voice.channelId },
+//     // });
+//     // audioPlayer.play(audioResource);
+
 //     audioPlayer.on(AudioPlayerStatus.Idle, () => {
 //       console.log('녹음끗');
 //       writeStream.end();
