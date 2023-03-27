@@ -7,7 +7,7 @@ const {
   AttachmentBuilder,
 } = require('discord.js');
 const { row_1 } = require('../../components/randomMatching');
-const { getTwoDimensions, getImageUrl } = require('../../common/function');
+const { getTwoDimensions, getImageUrl, formatToUtc } = require('../../common/function');
 const { env } = process;
 const schedule = require('node-schedule');
 const { addMinutes } = require('date-fns');
@@ -69,11 +69,13 @@ const onNormalMatch = async (memberList, interaction, limitTime, today) => {
     parent: env.RANDOM_ROOM_PARENT_ID,
     userLimit: memberList.length,
   });
+  console.log(`\n랜덤방 생성 , ID : ${newChannel.id}`);
   /** 도중 이탈이 있는지 점검 */
   let flag = true;
   await Promise.all(
     memberList.map(async member => {
       if (!combineRoomMemberIds.includes(member.id)) {
+        console.log(`${member.nickname}님 도중이탈`);
         await waitingRoom.send(
           `__${member}__님이 매칭중 이탈하여 ${memberList
             .filter(v => v.id !== member.id)
@@ -87,7 +89,12 @@ const onNormalMatch = async (memberList, interaction, limitTime, today) => {
     }),
   );
   if (flag) {
-    memberList.forEach(member => member.voice.setChannel(newChannel));
+    memberList.forEach(member =>
+      member.voice
+        .setChannel(newChannel)
+        .then(v => console.log(`${newChannel.id}에 ${v.nickname} 초대완료`))
+        .catch(console.error),
+    );
     newChannel.send({
       embeds: [greeting],
       files: [topic, topic_en],
@@ -98,12 +105,15 @@ const onNormalMatch = async (memberList, interaction, limitTime, today) => {
 
     schedule.scheduleJob(addMinutes(today, limitTime - 1), async () => {
       const room = await guild.channels.cache.get(newChannel.id);
-      if (room) await newChannel.send({ content: '1분 남았습니다. 대화를 마무리해주세요!' });
-      else job_1.cancel();
+      if (room) {
+        console.log(`${newChannel.id}에 1분 알림 작동`);
+        await newChannel.send({ content: '1분 남았습니다. 대화를 마무리해주세요!' });
+      } else job_1.cancel();
     });
     const job_1 = schedule.scheduleJob(addMinutes(today, limitTime), async () => {
       const room = await guild.channels.cache.get(newChannel.id);
       if (room) {
+        console.log(`${newChannel.id}에 제한시간 마감 작동`);
         if (isTeacher) await memberList[0].voice.setChannel(teacherRoom);
         else memberList[0].voice.setChannel(waitingRoom);
       }
@@ -222,6 +232,12 @@ module.exports = {
           const today = new Date();
           const limitTime = thisOptions.getInteger('제한시간설정');
           const isTeacher = thisOptions.getBoolean('선생님');
+          console.log(
+            `\n랜덤매칭 사용 (${formatToUtc(
+              new Date(),
+              'yyyy-MM-dd HH:mm:ss',
+            )}) , 선생님 : ${isTeacher} , 제한시간 : ${limitTime}`,
+          );
           const waitingRoomMembers = shuffle(waitingRoom.members.map(v => v));
           const waitingRoomMemberLength = waitingRoomMembers.length;
           let resultMembers = null;
@@ -253,6 +269,7 @@ module.exports = {
           }
           isProcessing = true;
           await interaction.reply({ content: '매칭중.....' });
+          console.log(`총 ${resultMembers.length}개 방 생성 준비`);
           /** 비동기 랜덤매칭 실행 */
           Promise.allSettled(
             resultMembers.map(v => onNormalMatch(v, interaction, limitTime, today)),
