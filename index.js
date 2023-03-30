@@ -16,7 +16,6 @@ const client = (module.exports = new Client({
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.DirectMessages,
-    GatewayIntentBits.GuildVoiceStates,
   ],
 }));
 
@@ -41,7 +40,7 @@ for (const folder of eventFolders) {
 /** 커맨드 파일 등록 */
 client.commands = new Collection();
 /** 무시할 커맨드 파일 */
-const ignoreCommandFiles = [];
+const ignoreCommandFiles = ['embed-builder.js'];
 const commands_json = [];
 const commandsFolders = fs.readdirSync('./commands');
 /** 폴더 loop */
