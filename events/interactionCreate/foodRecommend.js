@@ -3,7 +3,7 @@ const Schema = require('../../models/foodRecommend');
 const { foodModal } = require('../../components/foodRecommend');
 const { REG_EXP } = require('../../common/regex');
 const { getRandomElement } = require('../../common/function');
-const { Builder, By, Key, until } = require('selenium-webdriver');
+const { foods } = require('../../common/data.js');
 
 const colors = Object.values(Colors);
 
@@ -20,44 +20,40 @@ module.exports = {
       const { options } = interaction;
       /** 메뉴추천 실행 */
       if (options.getSubcommand() === '실행') {
-        let driver = await new Builder().forBrowser('chrome').build();
-        try {
-          await driver.get(
-            'https://www.notion.so/f09d67e62b454bd5beba52ebfb7e9599?v=50c5d1ab2e764473b06e1059107664bd',
-          );
-        } finally {
-          // driver.quit();
-        }
-        // const data = await Schema.aggregate([{ $sample: { size: 1 } }]);
-        // const item = data.at();
-        // const embed = new EmbedBuilder()
-        //   .setTitle(item.name)
-        //   .setDescription(`메뉴 : ${item.menu.length !== 0 ? item.menu.join(', ') : '-'}`)
-        //   .setColor(getRandomElement(colors))
-        //   .setImage(
-        //     'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyMjEwMjNfMjM4%2FMDAxNjY2NTEyMDU1MDM2.-if0jBERn4_osp-GoPZVI6yr3tyNwhErCmgKJR86v9Ug.EhEpO7c2LxA5uCW3lL0ONPmV5_sNNCf_Hk5unlarFhgg.JPEG.3m15s%2FIMG_7570.jpg',
-        //   )
-        //   .addFields([
-        //     { name: '\u200B', value: '\u200B' },
-        //     {
-        //       name: '거리',
-        //       value: item.distance ? `${item.distance.toString()}m` : '-',
-        //       inline: true,
-        //     },
-        //     { name: '설명', value: item.description || '-', inline: true },
-        //   ])
-        //   .setURL(item.link || null)
-        //   .setAuthor({
-        //     name: item.name,
-        //     iconURL:
-        //       'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyMjEwMjNfMjM4%2FMDAxNjY2NTEyMDU1MDM2.-if0jBERn4_osp-GoPZVI6yr3tyNwhErCmgKJR86v9Ug.EhEpO7c2LxA5uCW3lL0ONPmV5_sNNCf_Hk5unlarFhgg.JPEG.3m15s%2FIMG_7570.jpg',
-        //     url: item.link || undefined,
-        //   });
+        const data = await Schema.aggregate([{ $sample: { size: 1 } }]);
+        const item = data.at();
+        const embed = new EmbedBuilder()
+          .setTitle(item.name)
+          .setDescription(`메뉴 : ${item.menu.length !== 0 ? item.menu.join(', ') : '-'}`)
+          .setColor(getRandomElement(colors))
+          .addFields([
+            { name: '\u200B', value: '\u200B' },
+            {
+              name: '거리',
+              value: item.distance ? `${item.distance.toString()}m` : '-',
+              inline: true,
+            },
+            { name: '설명', value: item.description || '-', inline: true },
+          ])
+          .setURL(item.link || null);
 
-        // await interaction.reply({ embeds: [embed] });
+        await interaction.reply({ embeds: [embed] });
 
         /** 메뉴추천 추가 */
       } else if (options.getSubcommand() === '추가') {
+        // Promise.all(
+        //   foods?.map(v => {
+        //     const newData = new Schema({
+        //       name: v.name,
+        //       menu: v?.menu,
+        //       description: v?.description,
+        //       distance: v?.distance,
+        //       link: v?.link,
+        //     });
+        //     newData.save().catch(console.error);
+        //   }),
+        // );
+        // return;
         await interaction.showModal(foodModal);
       }
       /** 모달 제출 */
