@@ -6,6 +6,15 @@ const { getRandomElement } = require('../../common/function');
 const { foods } = require('../../common/data.js');
 
 const colors = Object.values(Colors);
+/**
+ *
+ * @param {number | null} limit
+ */
+const getWhere = limit => {
+  const where = [{ $sample: { size: 1 } }];
+  if (limit) where.unshift({ $match: { distance: { $lte: limit } } });
+  return where;
+};
 
 module.exports = {
   name: Events.InteractionCreate,
@@ -21,10 +30,8 @@ module.exports = {
       /** 메뉴추천 실행 */
       if (options.getSubcommand() === '실행') {
         const limitDistance = options.getInteger('거리제한');
-        const data = await Schema.aggregate([
-          limitDistance ? { $match: { distance: { $lte: limitDistance } } } : {},
-          { $sample: { size: 1 } },
-        ]);
+        const where = getWhere(limitDistance);
+        const data = await Schema.aggregate(where);
         const item = data.at();
         if (!item) return interaction.reply({ content: `데이터가 없어요 :woman_facepalming:` });
         const embed = new EmbedBuilder()
