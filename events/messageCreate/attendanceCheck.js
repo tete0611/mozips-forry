@@ -12,7 +12,7 @@ module.exports = {
   async execute(message) {
     if (message.content !== '!출석') return;
     let newData;
-    const { author, channel } = message;
+    const { author } = message;
     const user = await Schema.findOne({
       userId: author.id,
     });
@@ -24,7 +24,7 @@ module.exports = {
         userId: author.id,
         date: date,
       });
-      channel.send('첫번째 출석체크를 완료했어요 :tada:');
+      message.reply('첫번째 출석체크를 완료했어요 :tada:');
       newData.save();
       /** 이미 출석한 경우 */
     } else if (formatToUtc(user.date, 'yyyyMMdd') === formatToUtc(date, 'yyyyMMdd')) {
