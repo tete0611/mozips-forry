@@ -37,10 +37,10 @@ module.exports = {
         interaction.reply({ content: '이미 오늘 출석체크를 했어요!', ephemeral: true });
         /** 누적 출석인 경우 */
       } else {
-        const dateOfDifference = differenceInDays(new Date(userData.date), new Date(now));
+        const dateOfDifference = differenceInDays(new Date(now), new Date(userData.date));
         const successionCount = dateOfDifference === 1 ? userData.successionCount + 1 : 0;
         const conditionalText = successionCount
-          ? `__${userData.successionCount + 1}일__ 연속`
+          ? `__${userData.successionCount + 2}일__ 연속`
           : `__${dateOfDifference}일__ 만에`;
         await Schema.findOneAndUpdate(
           {
