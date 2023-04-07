@@ -44,8 +44,8 @@ module.exports = {
         const dateOfDifference = differenceInDays(new Date(now), new Date(userData.date));
         const successionCount = dateOfDifference === 1 ? userData.successionCount + 1 : 0;
         const conditionalText = successionCount
-          ? `__${userData.successionCount + 2}일__ 연속`
-          : `__${dateOfDifference}일__ 만에`;
+          ? `__${userData.successionCount + 2}일__ 연속 출석하셨네요!`
+          : `__${dateOfDifference}일__ 만에 돌아오셨네요!`;
         await Schema.findOneAndUpdate(
           {
             userId: user.id,
@@ -54,8 +54,8 @@ module.exports = {
         )
           .then(res => {
             const embed = new EmbedBuilder({
-              title: `:tada: ${conditionalText} 출석체크를 완료했어요 :tada:`,
-              description: `총 출석일수는 __${res.count + 1}일__이에요`,
+              title: `:tada: 출석체크를 완료했어요 :tada:`,
+              description: `${conditionalText}\n총 출석일수는 __${res.count + 1}일__이에요`,
               color: getRandomElement(colors),
             });
             interaction.reply({
@@ -68,45 +68,106 @@ module.exports = {
       }
       /** 출석체크 순위 */
     } else if (options.getSubcommand() === '순위') {
+      interaction.deferReply();
+      /** 데이터 조회 */
       const dataSource = await Schema.aggregate([{ $sort: { count: -1 } }]);
-      if (dataSource.length === 0) return interaction.reply('출석 데이터가 없습니다.');
+      if (dataSource.length === 0) return interaction.editReply('출석 데이터가 없습니다.');
+      /** 내림차순 정렬 연속 출석 데이터 생성 */
+      const successionDataSource = [...dataSource].sort(
+        (a, b) => b.successionCount - a.successionCount,
+      );
       const { guild } = interaction;
-      const myRank = (await Schema.count({ count: { $gt: userData.count + 1 } }).then()) + 1;
+      const myRank =
+        (await Schema.distinct('count', { count: { $gt: userData.count + 1 } })).length + 1;
+      const mySuccessionRank =
+        (
+          await Schema.distinct('successionCount', {
+            successionCount: { $gt: userData.successionCount + 1 },
+          })
+        ).length + 1;
       const members = await guild.members.fetch();
-      const embed = new EmbedBuilder({
-        title: `나의 순위 : ${myRank}등`,
-        description: `총 : ${members.size}명`,
+
+      const totalEmbed = new EmbedBuilder({
         fields: [
           { name: '\u200B', value: '\u200B' },
           { name: `1등:first_place:`, value: '-', inline: true },
-          { name: `2등:second_place:`, value: '    -    ', inline: true },
-          { name: `3등:third_place:`, value: '    -    ', inline: true },
-          { name: `4등`, value: '    -    ', inline: true },
-          { name: `5등`, value: '    -    ', inline: true },
-          { name: `6등`, value: '    -    ', inline: true },
+          { name: `2등:second_place:`, value: '-', inline: true },
+          { name: `3등:third_place:`, value: '-', inline: true },
+          { name: `4등`, value: '-', inline: true },
+          { name: `5등`, value: '-', inline: true },
+          { name: `6등`, value: '-', inline: true },
         ],
-        color: getRandomElement(colors),
       });
+      const successionEmbed = new EmbedBuilder({
+        fields: [
+          { name: '\u200B', value: '\u200B' },
+          { name: `1등:first_place:`, value: '-', inline: true },
+          { name: `2등:second_place:`, value: '-', inline: true },
+          { name: `3등:third_place:`, value: '-', inline: true },
+          { name: `4등`, value: '-', inline: true },
+          { name: `5등`, value: '-', inline: true },
+          { name: `6등`, value: '-', inline: true },
+        ],
+      });
+      /** 총 출석 반복문 */
       let rank = 1;
       let prevCount = null;
       let strValue = '';
       dataSource.forEach(v => {
-        const member = members.get(v.userId);
+        const fetchMember = members.get(v.userId);
         if (prevCount === null || prevCount !== v.count) {
           // 이전 값과 다른 값일 때만 순위를 증가시킴
-          strValue = `${member.nickname ?? member.user.username} (${v.count})`;
+          strValue = `${fetchMember.nickname ?? fetchMember.user.username} (${v.count})`;
           rank++;
         } else {
-          strValue += `\n${member.nickname ?? member.user.username} (${v.count})`;
+          strValue += `\n${fetchMember.nickname ?? fetchMember.user.username} (${v.count})`;
         }
-        embed.data.fields[rank - 1].value = strValue;
+        totalEmbed.data.fields[rank - 1].value = strValue;
         prevCount = v.count; // 이전 값 갱신
 
         if (rank > 6) {
           return false; // 순회 중단
         }
-      }),
-        interaction.reply({ embeds: [embed] });
+      });
+      /** 연속 출석 반복문 */
+      let rank_succ = 1;
+      let prevCount_succ = null;
+      let strValue_succ = '';
+      successionDataSource.forEach(v => {
+        const fetchMember = members.get(v.userId);
+        if (prevCount_succ === null || prevCount_succ !== v.successionCount) {
+          // 이전 값과 다른 값일 때만 순위를 증가시킴
+          strValue_succ = `${fetchMember.nickname ?? fetchMember.user.username} (${
+            v.successionCount
+          })`;
+          rank_succ++;
+        } else {
+          strValue_succ += `\n${fetchMember.nickname ?? fetchMember.user.username} (${
+            v.successionCount
+          })`;
+        }
+        successionEmbed.data.fields[rank_succ - 1].value = strValue_succ;
+        prevCount_succ = v.successionCount; // 이전 값 갱신
+
+        if (rank_succ > 6) {
+          return false; // 순회 중단
+        }
+      });
+
+      interaction.editReply({
+        embeds: [
+          totalEmbed
+            .setTitle(`:calendar_spiral: 총 출석 순위`)
+            .setDescription(`**${userData.count}회** : ${members.size}명중 ${myRank}등`)
+            .setColor(getRandomElement(colors)),
+          successionEmbed
+            .setTitle(`:date: 연속 출석 순위`)
+            .setDescription(
+              `**${userData.successionCount}회** : ${members.size}명중 ${mySuccessionRank}등`,
+            )
+            .setColor(getRandomElement(colors)),
+        ],
+      });
     }
   },
 };
