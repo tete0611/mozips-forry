@@ -29,6 +29,26 @@ module.exports = {
   },
 
   /**
+   * Date -> 한국시간 포맷 함수
+   * @param {Date} date 날짜 : Date 객체
+   * @returns {string} 변환된 날짜
+   */
+  formatToGmt: date => {
+    const tmp = date
+      .toLocaleString('en-GB', {
+        timeZone: 'Asia/Seoul',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+      .replace(' ', '')
+      .split(/,|\/|:/);
+    return `${tmp[2]}-${tmp[1]}-${tmp[0]} ${tmp[3]}:${tmp[4]}`;
+  },
+
+  /**
    * 파파고에러 함수
    * @param {import('request').Response} response
    *
