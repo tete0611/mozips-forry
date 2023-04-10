@@ -1,6 +1,7 @@
-const { formatToUtc, calcGMTToUTC } = require('../../common/function.js');
+const { formatToUtc, calcGMTToUTC, formatToGmt } = require('../../common/function.js');
 const schedule = require('node-schedule');
 const Schema = require('../../models/reservationMessage');
+const { sub } = require('date-fns');
 
 module.exports = {
   name: 'ready',
@@ -10,7 +11,15 @@ module.exports = {
    * @param {import("discord.js").Client} client
    */
   async execute(client) {
-    console.log(`${client.user.tag} 로그인 , ${formatToUtc(new Date())}`);
+    const today = new Date();
+    console.log(
+      `${client.user.username} 로그인 , ${formatToUtc(today)} / ${formatToGmt(today)}(한국시)`,
+    );
+    // console.log(today.toISOString());
+    // console.log(sub(today, { days: 1 }).toISOString());
+    // console.log(sub(today, { days: 2 }).toISOString());
+    // console.log(sub(today, { days: 3 }).toISOString());
+    // console.log(sub(today, { days: 4 }).toISOString());
 
     const jobs = await Schema.find();
     if (jobs.length !== 0) {

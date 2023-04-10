@@ -6,6 +6,15 @@ const { getRandomElement } = require('../../common/function');
 const { foods } = require('../../common/data.js');
 
 const colors = Object.values(Colors);
+/**
+ *
+ * @param {number | null} limit
+ */
+const getWhere = limit => {
+  const where = [{ $sample: { size: 1 } }];
+  if (limit) where.unshift({ $match: { distance: { $lte: limit } } });
+  return where;
+};
 
 module.exports = {
   name: Events.InteractionCreate,
@@ -16,12 +25,15 @@ module.exports = {
    */
   async execute(interaction) {
     /** 명령어 실행 */
-    if (interaction.commandName === '메뉴추천') {
+    if (interaction.commandName === '메뉴추천' && interaction.isChatInputCommand()) {
       const { options } = interaction;
       /** 메뉴추천 실행 */
       if (options.getSubcommand() === '실행') {
-        const data = await Schema.aggregate([{ $sample: { size: 1 } }]);
+        const limitDistance = options.getInteger('거리제한');
+        const where = getWhere(limitDistance);
+        const data = await Schema.aggregate(where);
         const item = data.at();
+        if (!item) return interaction.reply({ content: `데이터가 없어요 :woman_facepalming:` });
         const embed = new EmbedBuilder()
           .setTitle(item.name)
           .setDescription(`메뉴 : ${item.menu.length !== 0 ? item.menu.join(', ') : '-'}`)
@@ -30,7 +42,7 @@ module.exports = {
             { name: '\u200B', value: '\u200B' },
             {
               name: '거리',
-              value: item.distance ? `${item.distance.toString()}m` : '-',
+              value: item.distance ? `${item.distance.toString()}m` : '배달',
               inline: true,
             },
             { name: '설명', value: item.description || '-', inline: true },
@@ -66,7 +78,10 @@ module.exports = {
       const description = fields.getTextInputValue('foodRecommendDescription');
 
       if (distance && isNaN(Number(distance)))
-        return interaction.reply({ content: '"거리"값에 숫자만 입력해주세요.', ephemeral: true });
+        return interaction.reply({
+          content: '"거리"값에 숫자만 입력해주세요.',
+          ephemeral: true,
+        });
       if (link && !REG_EXP.hyperLink.test(link))
         return interaction.reply({
           content: 'http: 또는 https: 로 시작하는 링크를 입력해주세요.',
