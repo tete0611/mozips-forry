@@ -117,17 +117,16 @@ module.exports = {
         const fetchMember = members.get(v.userId);
         if (prevCount === null || prevCount !== v.count) {
           // 이전 값과 다른 값일 때만 순위를 증가시킴
-          strValue = `${fetchMember.nickname ?? fetchMember.user.username} (${v.count})`;
+          strValue = `${fetchMember.nickname ?? fetchMember.user.username}(${v.count})`;
           rank++;
         } else {
-          strValue += `\n${fetchMember.nickname ?? fetchMember.user.username} (${v.count})`;
+          strValue += `\n${fetchMember.nickname ?? fetchMember.user.username}(${v.count})`;
         }
+
+        if (rank > 7) return false; // 순회 중단
+
         totalEmbed.data.fields[rank - 1].value = strValue;
         prevCount = v.count; // 이전 값 갱신
-
-        if (rank > 6) {
-          return false; // 순회 중단
-        }
       });
       /** 연속 출석 반복문 */
       let rank_succ = 1;
@@ -137,21 +136,20 @@ module.exports = {
         const fetchMember = members.get(v.userId);
         if (prevCount_succ === null || prevCount_succ !== v.successionCount) {
           // 이전 값과 다른 값일 때만 순위를 증가시킴
-          strValue_succ = `${fetchMember.nickname ?? fetchMember.user.username} (${
+          strValue_succ = `${fetchMember.nickname ?? fetchMember.user.username}(${
             v.successionCount
           })`;
           rank_succ++;
         } else {
-          strValue_succ += `\n${fetchMember.nickname ?? fetchMember.user.username} (${
+          strValue_succ += `\n${fetchMember.nickname ?? fetchMember.user.username}(${
             v.successionCount
           })`;
         }
+
+        if (rank_succ > 7) return false; // 순회 중단
+
         successionEmbed.data.fields[rank_succ - 1].value = strValue_succ;
         prevCount_succ = v.successionCount; // 이전 값 갱신
-
-        if (rank_succ > 6) {
-          return false; // 순회 중단
-        }
       });
 
       interaction.editReply({
