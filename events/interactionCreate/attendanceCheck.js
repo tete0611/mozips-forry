@@ -68,8 +68,10 @@ module.exports = {
       }
       /** 출석체크 순위 */
     } else if (options.getSubcommand() === '순위') {
-      interaction.deferReply();
+      await interaction.deferReply();
       /** 데이터 조회 */
+      if (!userData)
+        return interaction.editReply(`내 데이터가 없습니다. 출석체크를 먼저 해주세요.`);
       const dataSource = await Schema.aggregate([{ $sort: { count: -1 } }]);
       if (dataSource.length === 0) return interaction.editReply('출석 데이터가 없습니다.');
       /** 내림차순 정렬 연속 출석 데이터 생성 */
@@ -82,7 +84,7 @@ module.exports = {
       const mySuccessionRank =
         (
           await Schema.distinct('successionCount', {
-            successionCount: { $gt: userData.successionCount + 1 },
+            successionCount: { $gt: userData.successionCount },
           })
         ).length + 1;
       const members = await guild.members.fetch();
