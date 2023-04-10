@@ -12,7 +12,7 @@ module.exports = {
   async execute(client) {
     const today = new Date();
     console.log(
-      `${client.user.tag} 로그인 , ${formatToUtc(today)} / ${formatToGmt(today)}(한국시)`,
+      `${client.user.username} 로그인 , ${formatToUtc(today)} / ${formatToGmt(today)}(한국시)`,
     );
 
     const jobs = await Schema.find();
