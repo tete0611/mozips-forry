@@ -1,7 +1,7 @@
-const { differenceInDays } = require('date-fns');
 const { Events, Colors, EmbedBuilder } = require('discord.js');
-const { formatToUtc, getRandomElement } = require('../../common/function');
+const { getRandomElement, getDifferenceDays, formatToUtc } = require('../../common/function');
 const Schema = require('../../models/attendanceCheck');
+const moment = require('moment');
 
 const colors = Object.values(Colors);
 
@@ -25,32 +25,39 @@ module.exports = {
 
     /** 출석체크 체크 */
     if (options.getSubcommand() === '체크') {
-      const now = new Date().toISOString();
+      const today = moment().format('YYYYMMDD');
+      const differenceDays = getDifferenceDays(userData?.date, today);
       /** 첫 출석인 경우 */
       if (!userData) {
         const newData = new Schema({
           count: 1,
           userId: user.id,
-          date: now,
+          date: today,
           successionCount: 0,
         });
         interaction.reply({ content: `첫번째 출석체크를 완료했어요 :tada:` });
         newData.save();
         /** 이미 출석한 경우 */
-      } else if (formatToUtc(userData.date, 'yyyyMMdd') === formatToUtc(now, 'yyyyMMdd')) {
+      } else if (differenceDays === 0) {
         interaction.reply({ content: '이미 오늘 출석체크를 했어요!', ephemeral: true });
         /** 누적 출석인 경우 */
       } else {
-        const dateOfDifference = differenceInDays(new Date(now), new Date(userData.date));
-        const successionCount = dateOfDifference === 1 ? userData.successionCount + 1 : 0;
+        /** 마지막 출석 날짜와 오늘 날짜의 차이 계산 */
+        const successionCount = differenceDays === 1 ? userData.successionCount + 1 : 0;
         const conditionalText = successionCount
-          ? `__${userData.successionCount + 2}일__ 연속 출석하셨네요!`
-          : `__${dateOfDifference}일__ 만에 돌아오셨네요!`;
+          ? `__${userData.successionCount + 2}일__ 연속 출석했어요!`
+          : `__${differenceDays}일__ 만에 돌아왔네요!`;
         await Schema.findOneAndUpdate(
           {
             userId: user.id,
           },
-          { $set: { count: userData.count + 1, date: now, successionCount: successionCount } },
+          {
+            $set: {
+              count: userData.count + 1,
+              date: today,
+              successionCount: successionCount,
+            },
+          },
         )
           .then(res => {
             const embed = new EmbedBuilder({

@@ -1,5 +1,6 @@
 const { format } = require('date-fns');
 const { ko } = require('date-fns/locale/ko');
+const moment = require('moment');
 
 module.exports = {
   /**
@@ -31,9 +32,10 @@ module.exports = {
   /**
    * Date -> 한국시간 포맷 함수
    * @param {Date} date 날짜 : Date 객체
+   * @param {boolean} yyyyMMdd yyyyMMdd 출력여부
    * @returns {string} 변환된 날짜
    */
-  formatToGmt: date => {
+  formatToGmt: (date, yyyyMMdd) => {
     const tmp = date
       .toLocaleString('en-GB', {
         timeZone: 'Asia/Seoul',
@@ -45,9 +47,18 @@ module.exports = {
       })
       .replace(' ', '')
       .split(/,|\/|:/);
-    return `${tmp[2]}-${tmp[1]}-${tmp[0]} ${tmp[3]}:${tmp[4]}`;
+    return yyyyMMdd
+      ? `${tmp[2]}${tmp[1]}${tmp[0]}`
+      : `${tmp[2]}-${tmp[1]}-${tmp[0]} ${tmp[3]}:${tmp[4]}`;
   },
-
+  /**
+   * 두 날짜의 일수 차이를 계산하는 함수
+   * @param { Date | string } startDate 빠른날짜
+   * @param { Date | string } endDate 느린날짜
+   * @returns {number}
+   */
+  getDifferenceDays: (startDate, endDate) =>
+    ~~moment.duration(moment(endDate).diff(moment(startDate))).asDays(),
   /**
    * 파파고에러 함수
    * @param {import('request').Response} response
