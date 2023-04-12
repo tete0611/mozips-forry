@@ -73,8 +73,8 @@ module.exports = {
             console.log('출석업데이트 에러 : ' + err);
           });
       }
-      /** 출석체크 순위 */
-    } else if (options.getSubcommand() === '순위') {
+      /** 출석체크 확인 */
+    } else if (options.getSubcommand() === '확인') {
       await interaction.deferReply();
       /** 데이터 조회 */
       if (!userData)
