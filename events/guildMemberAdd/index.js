@@ -10,11 +10,13 @@ module.exports = {
    */
   async execute(member) {
     console.log(`${member.user?.tag} 가 들어왔습니다.`);
+
     /** Welcome 채널 환영글 전송 */
-    const welcomeChannel = member.guild.channels.cache.get(process.env.WELCOME_CHANNEL_ID);
-    welcomeChannel.send({
-      content: `**Welcome <@${member.user.id}>!**\nPlease introduce yourself:sunflower::partying_face:\n(name, nationality, how long have you studied Korean)`,
-    });
+    // const welcomeChannel = member.guild.channels.cache.get(process.env.WELCOME_CHANNEL_ID);
+    // welcomeChannel.send({
+    //   content: `**Welcome <@${member.user.id}>!**\nPlease introduce yourself:sunflower::partying_face:\n(name, nationality, how long have you studied Korean)`,
+    // });
+
     /** DM 전송 */
     const { user } = member;
     user
