@@ -1,6 +1,10 @@
-const { Events } = require('discord.js');
+const { Events, Colors } = require('discord.js');
+const { welcomeEmbed } = require('../../components/welcome');
+const { getRandomElement } = require('../../common/function');
 const { env } = process;
 const welcomeChannelId = env.WELCOME_CHANNEL_ID;
+
+const colors = Object.values(Colors);
 
 module.exports = {
   name: Events.MessageCreate,
@@ -18,7 +22,7 @@ module.exports = {
       const messagesToDelete = botMessages.filter(msg => msg.id !== message.id).map(msg => msg.id);
       if (messagesToDelete.length > 0) channel.bulkDelete(messagesToDelete);
       await channel.send({
-        content: `Hello! New villager!👋🏻\nWelcome to mozips village!🏡\nMozips Village is a place where you can learn and practice Korean together.\nShall we greet our Mozips Villagers?💬\n1️⃣ Please let us know your name (nickname).\n2️⃣ How long have you been learning Korean?\n3️⃣ Which country are you from?\n4️⃣ Say a word to our villagers`,
+        embeds: [welcomeEmbed.setColor(getRandomElement(colors))],
       });
     }
   },
