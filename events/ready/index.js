@@ -26,6 +26,7 @@ module.exports = {
       jobs.map(v => {
         if (v.isRepeat) {
           const { repeatAt } = v;
+          const rule = new schedule.RecurrenceRule();
           schedule.scheduleJob(
             `0 ${repeatAt.minute} ${calcGMTToUTC(repeatAt.hour)} * * ${
               repeatAt.day !== 7 ? repeatAt.day : '*'
@@ -37,7 +38,14 @@ module.exports = {
           );
         } else {
           const date = new Date(v.reservedAt);
-          schedule.scheduleJob(calcGMTToUTC(date), async () => {
+          const rule = new schedule.RecurrenceRule();
+          rule.tz = 'Asia/Seoul';
+          rule.year = date.getFullYear();
+          rule.month = date.getMonth() + 1;
+          rule.date = date.getDate();
+          rule.hour = date.getHours();
+          rule.minute = date.getMinutes();
+          schedule.scheduleJob(rule, async () => {
             const channel = await client.channels.cache.get(v.channelId);
             channel.send(v.message);
           });
