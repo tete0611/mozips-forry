@@ -1,5 +1,5 @@
 const { Events, Colors, EmbedBuilder } = require('discord.js');
-const { getRandomElement, getDifferenceDays, formatToUtc } = require('../../common/function');
+const { getRandomElement, getDifferenceDays } = require('../../common/function');
 const Schema = require('../../models/attendanceCheck');
 const moment = require('moment');
 
@@ -25,7 +25,8 @@ module.exports = {
 
     /** 출석체크 체크 */
     if (options.getSubcommand() === '체크') {
-      const today = moment().format('YYYYMMDD');
+      /** 한국시 (+9시) 기준 날짜 생성 */
+      const today = moment().add(9, 'hours').format('YYYYMMDD');
       const differenceDays = getDifferenceDays(userData?.date, today);
       /** 첫 출석인 경우 */
       if (!userData) {
@@ -82,9 +83,9 @@ module.exports = {
       const dataSource = await Schema.aggregate([{ $sort: { count: -1 } }]);
       if (dataSource.length === 0) return interaction.editReply('출석 데이터가 없습니다.');
       /** 내림차순 정렬 연속 출석 데이터 생성 */
-      const successionDataSource = [...dataSource].sort(
-        (a, b) => b.successionCount - a.successionCount,
-      );
+      const successionDataSource = [...dataSource]
+        .sort((a, b) => b.successionCount - a.successionCount)
+        .filter(v => v.successionCount !== 0);
       const { guild } = interaction;
       const myRank =
         (await Schema.distinct('count', { count: { $gt: userData.count + 1 } })).length + 1;

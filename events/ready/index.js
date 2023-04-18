@@ -1,7 +1,6 @@
 const { formatToUtc, calcGMTToUTC, formatToGmt } = require('../../common/function.js');
 const schedule = require('node-schedule');
 const Schema = require('../../models/reservationMessage');
-const { sub } = require('date-fns');
 
 module.exports = {
   name: 'ready',
@@ -21,33 +20,40 @@ module.exports = {
     // console.log(sub(today, { days: 3 }).toISOString());
     // console.log(sub(today, { days: 4 }).toISOString());
 
+    Schema.deleteMany({ reservedAt: { $lt: today.toISOString() } })
+      .then(v => console.log(`${v.deletedCount}개의 이전 예약메시지를 삭제했습니다`))
+      .catch(console.error);
     const jobs = await Schema.find();
     if (jobs.length !== 0) {
       jobs.map(v => {
+        const { repeatAt, channelId, message, reservedAt } = v;
         if (v.isRepeat) {
-          const { repeatAt } = v;
-          const rule = new schedule.RecurrenceRule();
           schedule.scheduleJob(
-            `0 ${repeatAt.minute} ${calcGMTToUTC(repeatAt.hour)} * * ${
+            {
+              tz: 'Asia/Seoul',
+              rule: `0 ${repeatAt.minute} ${repeatAt.hour} * * ${
+                repeatAt.day !== 7 ? repeatAt.day : '*'
+              }`,
+            },
+            /* `0 ${repeatAt.minute} ${calcGMTToUTC(repeatAt.hour)} * * ${
               repeatAt.day !== 7 ? repeatAt.day : '*'
-            }`,
-            async () => {
-              const channel = await client.channels.cache.get(v.channelId);
-              channel.send(v.message);
+            }`*/ async () => {
+              const channel = await client.channels.cache.get(channelId);
+              channel.send(message);
             },
           );
         } else {
-          const date = new Date(v.reservedAt);
+          const date = new Date(reservedAt);
           const rule = new schedule.RecurrenceRule();
           rule.tz = 'Asia/Seoul';
           rule.year = date.getFullYear();
-          rule.month = date.getMonth() + 1;
+          rule.month = date.getMonth();
           rule.date = date.getDate();
           rule.hour = date.getHours();
           rule.minute = date.getMinutes();
           schedule.scheduleJob(rule, async () => {
-            const channel = await client.channels.cache.get(v.channelId);
-            channel.send(v.message);
+            const channel = client.channels.cache.get(channelId);
+            await channel.send(message);
           });
         }
       });
