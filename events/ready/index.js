@@ -21,7 +21,9 @@ module.exports = {
     // console.log(sub(today, { days: 4 }).toISOString());
 
     Schema.deleteMany({ reservedAt: { $lt: today.toISOString() } })
-      .then(v => console.log(`${v.deletedCount}개의 이전 예약메시지를 삭제했습니다`))
+      .then(
+        v => v.deletedCount && console.log(`${v.deletedCount}개의 이전 예약메시지를 삭제했습니다`),
+      )
       .catch(console.error);
     const jobs = await Schema.find();
     if (jobs.length !== 0) {
