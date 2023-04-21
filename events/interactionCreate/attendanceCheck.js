@@ -88,7 +88,7 @@ module.exports = {
         .filter(v => v.successionCount !== 0);
       const { guild } = interaction;
       const myRank =
-        (await Schema.distinct('count', { count: { $gt: userData.count + 1 } })).length + 1;
+        (await Schema.distinct('count', { count: { $gt: userData.count } })).length + 1;
       const mySuccessionRank =
         (
           await Schema.distinct('successionCount', {
