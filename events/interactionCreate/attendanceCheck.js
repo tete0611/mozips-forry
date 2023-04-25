@@ -128,10 +128,10 @@ module.exports = {
         if (fetchMember) {
           if (prevCount === null || prevCount !== v.count) {
             // 이전 값과 다른 값일 때만 순위를 증가시킴
-            strValue = `${fetchMember?.nickname ?? fetchMember.user.username}(${v.count})`;
+            strValue = `${fetchMember?.displayName}(${v.count})`;
             rank++;
           } else {
-            strValue += `\n${fetchMember?.nickname ?? fetchMember.user.username}(${v.count})`;
+            strValue += `\n${fetchMember?.displayName}(${v.count})`;
           }
 
           if (rank > 7) return false; // 순회 중단
@@ -149,14 +149,10 @@ module.exports = {
         if (fetchMember) {
           if (prevCount_succ === null || prevCount_succ !== v.successionCount) {
             // 이전 값과 다른 값일 때만 순위를 증가시킴
-            strValue_succ = `${fetchMember?.nickname ?? fetchMember.user.username}(${
-              v.successionCount
-            })`;
+            strValue_succ = `${fetchMember?.displayName}(${v.successionCount})`;
             rank_succ++;
           } else {
-            strValue_succ += `\n${fetchMember?.nickname ?? fetchMember.user.username}(${
-              v.successionCount
-            })`;
+            strValue_succ += `\n${fetchMember?.displayName}(${v.successionCount})`;
           }
 
           if (rank_succ > 7) return false; // 순회 중단
