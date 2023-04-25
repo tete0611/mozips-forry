@@ -35,7 +35,7 @@ module.exports = {
           message: message,
           reservedAt: totalDate.toISOString(),
           userId: user.id,
-          userNickname: member.nickname,
+          userNickname: member.displayName,
           channelId: channel.id,
         });
         newJob.save();
@@ -53,7 +53,7 @@ module.exports = {
           message: message,
           repeatAt: { minute: minute, hour: hour, day: day },
           userId: user.id,
-          userNickname: member.nickname,
+          userNickname: member.displayName,
           channelId: channel.id,
         });
         newJob.save().then(() =>
