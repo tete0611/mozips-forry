@@ -25,6 +25,7 @@ module.exports = {
 
     /** 출석체크 체크 */
     if (options.getSubcommand() === '체크') {
+      await interaction.deferReply();
       /** 한국시 (+9시) 기준 날짜 생성 */
       const today = moment().add(9, 'hours').format('YYYYMMDD');
       const differenceDays = getDifferenceDays(userData?.date, today);
@@ -36,11 +37,11 @@ module.exports = {
           date: today,
           successionCount: 0,
         });
-        interaction.reply({ content: `첫번째 출석체크를 완료했어요 :tada:` });
+        interaction.editReply({ content: `첫번째 출석체크를 완료했어요 :tada:` });
         newData.save();
         /** 이미 출석한 경우 */
       } else if (differenceDays === 0) {
-        interaction.reply({ content: '이미 오늘 출석체크를 했어요!', ephemeral: true });
+        interaction.editReply({ content: '이미 오늘 출석체크를 했어요!', ephemeral: true });
         /** 누적 출석인 경우 */
       } else {
         /** 마지막 출석 날짜와 오늘 날짜의 차이 계산 */
@@ -66,7 +67,7 @@ module.exports = {
               description: `${conditionalText}\n총 출석일수는 __${res.count + 1}일__이에요`,
               color: getRandomElement(colors),
             });
-            interaction.reply({
+            interaction.editReply({
               embeds: [embed],
             });
           })
