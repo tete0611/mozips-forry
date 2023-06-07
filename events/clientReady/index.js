@@ -1,9 +1,10 @@
-const { formatToUtc, calcGMTToUTC, formatToGmt } = require('../../common/function.js');
+const { formatToUtc, formatToGmt } = require('../../common/function.js');
 const schedule = require('node-schedule');
-const Schema = require('../../models/reservationMessage');
+const Schema = require('../../models/reservationMessage.js');
+const { Events } = require('discord.js');
 
 module.exports = {
-  name: 'ready',
+  name: Events.ClientReady,
   once: true,
   /**
    *

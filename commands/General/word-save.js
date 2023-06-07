@@ -11,9 +11,4 @@ module.exports = {
         .setRequired(true)
         .setMaxLength(200),
     ),
-  /**
-   *
-   * @param {import("discord.js").CommandInteraction} interaction
-   */
-  async execute(interaction) {},
 };
