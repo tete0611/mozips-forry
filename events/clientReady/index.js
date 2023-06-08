@@ -1,6 +1,7 @@
 const { formatToUtc, formatToGmt } = require('../../common/function.js');
 const schedule = require('node-schedule');
-const Schema = require('../../models/reservationMessage.js');
+const ReservationMessage = require('../../models/reservationMessage.js');
+const Attendance = require('../../models/attendanceCheck.js');
 const { Events } = require('discord.js');
 
 module.exports = {
@@ -11,22 +12,21 @@ module.exports = {
    * @param {import("discord.js").Client} client
    */
   async execute(client) {
+    /** 로그인 메시지 출력 */
     const today = new Date();
     console.log(
       `${client.user.username} 로그인 , ${formatToUtc(today)} / ${formatToGmt(today)}(한국시)`,
     );
-    // console.log(today.toISOString());
-    // console.log(sub(today, { days: 1 }).toISOString());
-    // console.log(sub(today, { days: 2 }).toISOString());
-    // console.log(sub(today, { days: 3 }).toISOString());
-    // console.log(sub(today, { days: 4 }).toISOString());
 
-    Schema.deleteMany({ reservedAt: { $lt: today.toISOString() } })
+    /** 이전 예약메시지 삭제 */
+    ReservationMessage.deleteMany({ reservedAt: { $lt: today.toISOString() } })
       .then(
         v => v.deletedCount && console.log(`${v.deletedCount}개의 이전 예약메시지를 삭제했습니다`),
       )
       .catch(console.error);
-    const jobs = await Schema.find();
+
+    /** 예약메시지 등록 */
+    const jobs = await ReservationMessage.find();
     if (jobs.length !== 0) {
       jobs.map(v => {
         const { repeatAt, channelId, message, reservedAt } = v;
@@ -38,9 +38,7 @@ module.exports = {
                 repeatAt.day !== 7 ? repeatAt.day : '*'
               }`,
             },
-            /* `0 ${repeatAt.minute} ${calcGMTToUTC(repeatAt.hour)} * * ${
-              repeatAt.day !== 7 ? repeatAt.day : '*'
-            }`*/ async () => {
+            async () => {
               const channel = await client.channels.cache.get(channelId);
               channel.send(message);
             },
